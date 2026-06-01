@@ -1,0 +1,19 @@
+{
+  "name": "app",
+  "version": "1.0.50",
+  "scripts": {
+    "dev": "NODE_OPTIONS='--disable-proto=throw' bun run --watch src/index.ts",
+    "start": "NODE_OPTIONS='--disable-proto=throw' bun run src/index.ts"
+  },
+  "dependencies": {
+    "@upstash/redis": "^1.38.0",
+    "elysia": "latest",
+    "jose": "^6.2.3",
+    "zod": "^4.0.0",
+    "@elysiajs/cors":"1.4.2"
+  },
+  "devDependencies": {
+    "bun-types": "latest"
+  },
+  "module": "src/index.js"
+}
