@@ -30,8 +30,6 @@ export async function get_connection(fn:(sql:SQL) => Promise<any>):Promise<any>{
     try{
         const res=await fn(con);
         return res;
-    }catch(e){
-        console.log(`caught exception during query:${e}`)
     }finally{
         await con.end();
     }
@@ -56,7 +54,12 @@ export async function get_session(header:Record<string,string|undefined>):Promis
     try{
         const secret=new TextEncoder().encode(Bun.env.JWT_SECRET ?? "debug jwt key");
         const info=await jose.jwtVerify(auth_token,secret,{algorithms:["HS256"],audience:"auth"});
-        return new session(parseInt(info.payload.uid),info.payload.priv);
+        const uid=info.payload.uid;
+        const priv=info.payload.priv;
+        if(typeof uid!='string' || typeof priv!='string'){
+            throw new Error("invalid jwt");
+        }
+        return new session(parseInt(uid),priv);
     }catch{
         throw status(403,"invalid jwt");
     }

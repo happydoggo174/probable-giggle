@@ -4,7 +4,8 @@
   "scripts": {
     "dev": "bun run --watch src/index.ts",
     "start": "NODE_OPTIONS='--disable-proto=throw' bun run src/index.ts",
-    "docker": "docker compose down && docker compose up -d --build"
+    "docker": "docker compose down && docker compose up -d --build",
+    "commit" :"git add . && git commit && git push origin main"
   },
   "dependencies": {
     "@upstash/redis": "^1.38.0",

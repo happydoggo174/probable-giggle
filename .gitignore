@@ -42,3 +42,4 @@ yarn-error.log*
 /db
 /node_modules
 /redis
+dump.sql
