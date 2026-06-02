@@ -30,6 +30,8 @@ export async function get_connection(fn:(sql:SQL) => Promise<any>):Promise<any>{
     try{
         const res=await fn(con);
         return res;
+    }catch(e){
+        console.log(`caught exception during query:${e}`)
     }finally{
         await con.end();
     }

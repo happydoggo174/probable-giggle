@@ -32,5 +32,7 @@ app.get("/",({set})=>{
         </body>
     `;
 });
-export default app
-//await start_app();
+if(Bun.env.APP_DEBUG=='true'){
+    await start_app();
+}
+export default app;

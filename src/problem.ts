@@ -1,11 +1,21 @@
 import {z} from "zod";
 import Elysia from "elysia";
+import { get_connection } from "./tools";
 export const problem_route=new Elysia({prefix:"/problem"});
-problem_route.get('/home',()=>
-     [{title:"easy problem",difficulty:"easy",reaction:3,id:0},
+problem_route.get('/home',async ()=>{
+     return await get_connection(async (db)=>{
+        return await db`select title,difficulty,reaction,id from problem`;
+     });
+     return [{title:"easy problem",difficulty:"easy",reaction:3,id:0},
      {title:"medium problem",difficulty:"medium",reaction:-13,id:1},
-     {title:"hard problem",difficulty:"hard",reaction:26,id:2}]
-).get("/detail",({query})=>{
+     {title:"hard problem",difficulty:"hard",reaction:26,id:2}];
+}
+).get("/detail",async ({query,set})=>{
+    set.headers["cache-control"]='public, s-maxage=3600, stale-while-revalidate=60';
+    return await get_connection(async(db)=>{
+        return await db`select title,description,author_name as author,parameter,output 
+        from problem where id=${query.problem_id}`;
+    });
     const data=[
         {
             title:"easy problem",
