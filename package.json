@@ -5,7 +5,8 @@
     "dev": "bun run --watch src/index.ts",
     "start": "NODE_OPTIONS='--disable-proto=throw' bun run src/index.ts",
     "docker": "docker restart app-bun_server-1",
-    "commit" :"git add . && git commit && git push origin main"
+    "commit" :"git add . && git commit && git push origin main",
+    "build": "bun build --minify-whitespace --minify-syntax --target bun --outfile server src/index.ts"
   },
   "dependencies": {
     "@upstash/redis": "^1.38.0",

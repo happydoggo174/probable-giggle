@@ -1,6 +1,1 @@
-{
-    "bunVersion": "1.x",
-    "scripts": {
-        "build": "bun build --minify-whitespace --minify-syntax --target bun --outfile server src/index.ts"
-    }
-}
+{"bunVersion": "1.x"}
