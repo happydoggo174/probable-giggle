@@ -30,7 +30,7 @@ problem_route.use(auth_middleware).get('/home',async ({set,user})=>{
         if(!data.length){
             throw status(404,"problem not found");
         }
-        return data;
+        return data[0];
     });
 },{query:z.object({
     problem_id:z.coerce.number()

@@ -41,6 +41,14 @@ export async function get_connection(fn:(sql:SQL) => Promise<any>):Promise<any>{
     }
     try{
         const res=await fn(con);
+        if(Array.isArray(res)){
+            //fixes a legacy framework bug where cors is dropped on bun sql array being returned
+            const fix=[];
+            for(let val of res){
+                fix.push(val);
+            }
+            return fix;
+        }
         return res;
     }finally{
         await con.end();

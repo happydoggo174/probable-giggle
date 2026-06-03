@@ -25,7 +25,10 @@ function make_session(payload:JWTPayload){
 let jwt_keys:null|ReturnType<typeof createRemoteJWKSet>=null;
 const AUTH0_DOMAIN=Bun.env.AUTH0_DOMAIN;
 const AUTH0_AUDIENCE=Bun.env.AUTH0_AUDIENCE;
-const auth_middleware=new Elysia({name:"auth middleware"}).derive({as:"global"},async ({headers})=>{
+const auth_middleware=new Elysia({name:"auth middleware"}).derive({as:"global"},async ({request,headers})=>{
+    if (request.method === "OPTIONS") {
+        return { user: null };
+    }
     const auth_header=headers.authorization;
     let user=null;
     if(headers.jwt_bypass && Bun.env.JWT_TEST){
