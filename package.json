@@ -4,7 +4,7 @@
   "scripts": {
     "dev": "bun run --watch src/index.ts",
     "start": "NODE_OPTIONS='--disable-proto=throw' bun run src/index.ts",
-    "docker": "docker compose down && docker compose up -d --build",
+    "docker": "docker restart app-bun_server-1",
     "commit" :"git add . && git commit && git push origin main"
   },
   "dependencies": {

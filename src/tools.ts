@@ -26,7 +26,19 @@ class FileResult{
 }
 export async function get_connection(fn:(sql:SQL) => Promise<any>):Promise<any>{
     const url=Bun.env.POSTGRES_URL ?? "";
-    const con=new SQL(url,{max:1,prepare:false});//we're using pgbouncer,so don't pool manually
+    let con=null;
+    if(Bun.env.POSTGRES_HOST && Bun.env.POSTGRES_PASSWORD && Bun.env.POSTGRES_USER){
+        con=new SQL({
+            host:Bun.env.POSTGRES_HOST,
+            password:Bun.env.POSTGRES_PASSWORD,
+            username:Bun.env.POSTGRES_USER,
+            port:6543,
+            database:"postgres",
+            tls:true
+        });
+    }else{
+        con=new SQL({url:Bun.env.POSTGRES_URL});
+    }
     try{
         const res=await fn(con);
         return res;

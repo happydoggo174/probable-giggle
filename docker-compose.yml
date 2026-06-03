@@ -6,6 +6,13 @@ services:
     environment:
       - APP_DEBUG=true
       - POSTGRES_URL=postgresql://postgres:postgres@database:5432/postgres
+      - POSTGRES_HOST=aws-1-ap-southeast-1.pooler.supabase.com
+      - POSTGRES_PASSWORD=dskSrtZDdzMA6KiN
+      - POSTGRES_USER=postgres.wjifwflztejubvgibbtj
+      - AUTH0_DOMAIN=dev-25r4jfrx2w3std4k.us.auth0.com
+      - AUTH0_AUDIENCe=mathapi
+    volumes:
+     - ./src:/home/bun/app/src
   database:
     image : postgres:18.3@sha256:7e32e9833a6fb1c92c32552794cb6ed569d51b445a54907d35fc112ef39684db
     environment:
