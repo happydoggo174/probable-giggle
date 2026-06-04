@@ -5,7 +5,9 @@ const app=new Elysia();
 app.use(cors());
 app.use(problem_route);
 async function start_app(){
-    let port= Bun.env.PORT|| 3000; 
+    app.listen(parseInt(Bun.env.PORT ?? "3000"));
+    return;
+    /*let port= Bun.env.PORT|| 3000; 
     try{
         app.listen(port);
     }catch{
@@ -18,7 +20,7 @@ async function start_app(){
         await Bun.$`"sudo -S nginx -s reload`;
         const old_port=(port==3000)?3001:3000;
         await Bun.$`pkill -INT -f ":${old_port} -"`;
-    }
+    }*/
 }
 app.get("/",({set})=>{
     set.headers["content-type"]="text/html";
