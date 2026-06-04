@@ -5,7 +5,7 @@ const app=new Elysia();
 app.use(cors());
 app.use(problem_route);
 async function start_app(){
-    let port=3000; 
+    let port= Bun.env.PORT|| 3000; 
     try{
         app.listen(port);
     }catch{
@@ -32,7 +32,7 @@ app.get("/",({set})=>{
         </body>
     `;
 });
-if(Bun.env.APP_DEBUG=='true'){
+if(Bun.env.LISTEN=='true'){
     await start_app();
 }
 export default app;
