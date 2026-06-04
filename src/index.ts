@@ -3,7 +3,7 @@ import { problem_route } from "./problem";
 import { cors } from '@elysiajs/cors'
 const app=new Elysia();
 app.use(cors());
-//app.use(problem_route);
+app.use(problem_route);
 async function start_app(){
     console.log(`binding to port ${ Bun.env.PORT}`);    
     app.listen({port:parseInt(Bun.env.PORT ?? "3000"),hostname:"0.0.0.0"});
