@@ -10,7 +10,7 @@ problem_route.use(auth_middleware).get('/home',async ({set,user})=>{
             return await db`select title,difficulty,reaction,id from problem`;
         }
         return await db`select title,difficulty,problem.reaction,id,status from problem left join problem_info 
-        on problem.id=problem_info.problem_id where problem_info.uid=${user.user_id};`
+        on problem.id=problem_info.problem_id and problem_info.uid=${user.user_id}`;
     });
 }
 ).get("/detail",async ({query,set,user})=>{
