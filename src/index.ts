@@ -6,7 +6,7 @@ app.use(cors());
 app.use(problem_route);
 async function start_app(){
     console.log(`binding to port ${ Bun.env.PORT}`);    
-    app.listen(parseInt(Bun.env.PORT ?? "3000"));
+    app.listen({port:parseInt(Bun.env.PORT ?? "3000"),hostname:"0.0.0.0"});
     return;
     /*let port= Bun.env.PORT|| 3000; 
     try{
