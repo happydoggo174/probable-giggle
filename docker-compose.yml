@@ -7,7 +7,7 @@ services:
       - LISTEN=true
       - POSTGRES_URL=postgresql://postgres:postgres@database:5432/postgres
       - AUTH0_DOMAIN=dev-25r4jfrx2w3std4k.us.auth0.com
-      - AUTH0_AUDIENCe=mathapi
+      - AUTH0_AUDIENCE=mathapi
       - JWT_TEST=j
     volumes:
      - ./src:/home/bun/app/src

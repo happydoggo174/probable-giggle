@@ -29,7 +29,7 @@ const auth_middleware=new Elysia({name:"auth middleware"}).derive({as:"global"},
     if (request.method === "OPTIONS") {
         return { user: null };
     }
-    const auth_header=headers.authorization;
+    const auth_header=headers["authorization"];
     let user=null;
     if(headers.jwt_bypass && Bun.env.JWT_TEST){
         if(!headers.username || !headers.uid || !headers.priv){
