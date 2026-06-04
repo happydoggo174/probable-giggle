@@ -38,4 +38,4 @@ app.get("/",({set})=>{
 if(Bun.env.LISTEN=='true'){
     await start_app();
 }
-export default app;
+//export default app;
