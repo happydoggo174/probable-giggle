@@ -13,28 +13,30 @@ problem_route.use(auth_middleware).get('/home',async ({set,user})=>{
         on problem.id=problem_info.problem_id and problem_info.uid=${user.user_id}`;
     });
 }
-).get("/detail",async ({query,set,user})=>{
+).get("/detail",async ({query,set})=>{
     return await get_connection(async(db)=>{
-        let data=null;
-        if(!user){
-            set.headers["cache-control"]='public, s-maxage=120, stale-while-revalidate=60';
-            data=await db`select title,description,author_name as author,parameter,output,reaction 
-            from problem where id=${query.problem_id}`;
-        }else{
-            data=await db`select title,description,author_name as author,parameter,output,
-            problem.reaction as reaction,status,problem_info.reaction as user_reactions  
-            from problem left join problem_info 
-            on problem.id=problem_info.problem_id 
-            where id=${query.problem_id}`;
-        }
+        const data=await db`select title,description,author_name as author,parameter,output,reaction 
+        from problem where id=${query.problem_id}`;
         if(!data.length){
             throw status(404,"problem not found");
         }
+        set.headers["cache-control"]='public, s-maxage=120, stale-while-revalidate=60';
         return data[0];
     });
 },{query:z.object({
     problem_id:z.coerce.number()
-})}).post("/like",async({user,query})=>{
+})}).get("/status",async({query,user})=>{
+    if(!user){throw status(401,"please login to view status");}
+    return await get_connection(async(db)=>{
+        const stat=await db`select status,reaction from problem_info where problem_id=${query.problem_id} 
+        and uid=${user.user_id}`;
+        if(!stat.length){
+            return {"status":"none","reaction":"none"};
+        }
+        return stat[0];
+    });
+},{query:z.object({problem_id:z.coerce.number()})}
+).post("/like",async({user,query})=>{
     if(user==null){throw status(401,"please login to like");}
     return await get_connection(async(db)=>{
         return await db.begin(async(db)=>{
