@@ -34,7 +34,8 @@ export async function get_connection(fn:(sql:SQL) => Promise<any>):Promise<any>{
             username:Bun.env.POSTGRES_USER,
             port:6543,
             database:"postgres",
-            tls:true
+            tls:true,
+            prepare:false
         });
     }else{
         con=new SQL({url:Bun.env.POSTGRES_URL});
@@ -42,8 +43,11 @@ export async function get_connection(fn:(sql:SQL) => Promise<any>):Promise<any>{
     try{
         const res=await fn(con);
         if(Array.isArray(res)){
+            console.log(`before=${res}`);
             //fixes a legacy framework bug where cors is dropped on bun sql array being returned
-            return Array.from(res);
+            const n=Array.from(res);
+            console.log(`after=${n}`);
+            return n;
         }
         return res;
     }finally{

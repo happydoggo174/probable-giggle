@@ -5,8 +5,9 @@ const app=new Elysia();
 app.use(cors());
 app.use(problem_route);
 async function start_app(){
-    console.log(`binding to port ${ Bun.env.PORT}`);    
-    app.listen({port:parseInt(Bun.env.PORT ?? "3000"),hostname:"0.0.0.0"});
+    const port=parseInt(Bun.env.PORT ?? "3000");    
+    console.log(`binding to port ${ port}`);
+    app.listen({port:port,hostname:"0.0.0.0"});
     return;
     /*let port= Bun.env.PORT|| 3000; 
     try{
