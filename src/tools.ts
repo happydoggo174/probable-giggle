@@ -43,10 +43,8 @@ export async function get_connection(fn:(sql:SQL) => Promise<any>):Promise<any>{
     try{
         const res=await fn(con);
         if(Array.isArray(res)){
-            console.log(`before=${res}`);
             //fixes a legacy framework bug where cors is dropped on bun sql array being returned
             const n=Array.from(res);
-            console.log(`after=${n}`);
             return n;
         }
         return res;
