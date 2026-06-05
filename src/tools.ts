@@ -10,6 +10,7 @@ class session{
         this.priv=priv;
     }
 }
+let db:Bun.SQL|null=null;
 class FileResult{
     public filename:string;
     public err:string|null;
@@ -24,33 +25,32 @@ class FileResult{
         throw status(500,this.err);
     }
 }
+export async function close_db(){
+    await db?.end();
+}
 export async function get_connection(fn:(sql:SQL) => Promise<any>):Promise<any>{
-    const url=Bun.env.POSTGRES_URL ?? "";
-    let con=null;
-    if(Bun.env.POSTGRES_HOST && Bun.env.POSTGRES_PASSWORD && Bun.env.POSTGRES_USER){
-        con=new SQL({
-            host:Bun.env.POSTGRES_HOST,
-            password:Bun.env.POSTGRES_PASSWORD,
-            username:Bun.env.POSTGRES_USER,
-            port:6543,
-            database:"postgres",
-            tls:true,
-            prepare:false
-        });
-    }else{
-        con=new SQL({url:Bun.env.POSTGRES_URL});
-    }
-    try{
-        const res=await fn(con);
-        if(Array.isArray(res)){
-            //fixes a legacy framework bug where cors is dropped on bun sql array being returned
-            const n=Array.from(res);
-            return n;
+    if(db==null){
+        if(Bun.env.POSTGRES_HOST && Bun.env.POSTGRES_PASSWORD && Bun.env.POSTGRES_USER){
+            db=new SQL({
+                host:Bun.env.POSTGRES_HOST,
+                password:Bun.env.POSTGRES_PASSWORD,
+                username:Bun.env.POSTGRES_USER,
+                port:6543,
+                database:"postgres",
+                tls:true,
+                prepare:false
+            });
+        }else{
+            db=new SQL({url:Bun.env.POSTGRES_URL});
         }
-        return res;
-    }finally{
-        await con.end();
     }
+    const res=await fn(db);
+    if(Array.isArray(res)){
+        //fixes a legacy framework bug where cors is dropped on bun sql array being returned
+        const n=Array.from(res);
+        return n;
+    }
+    return res;
 }
 export async function get_redis(fn:(r:Redis)=>Promise<any>):Promise<void>{
     // Manual initialization

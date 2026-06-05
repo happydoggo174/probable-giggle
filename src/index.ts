@@ -1,9 +1,13 @@
 import {Elysia} from "elysia";
 import { problem_route } from "./problem";
 import { cors } from '@elysiajs/cors'
+import { close_db } from "./tools";
 const app=new Elysia();
 app.use(cors());
 app.use(problem_route);
+app.onStop(async()=>{
+    await close_db();
+});
 async function start_app(){
     const port=parseInt(Bun.env.PORT ?? "3000");    
     console.log(`binding to port ${ port}`);
@@ -39,4 +43,3 @@ app.get("/",({set})=>{
 if(Bun.env.LISTEN=='true'){
     await start_app();
 }
-//export default app;
