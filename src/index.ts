@@ -42,7 +42,7 @@ app.get("/",({set})=>{
         <div style="margin-top:12px;dislay:block;text-align:center">some other text</div>
         </body>
     `;
-}).post("/register",async({body})=>{
+}).post("/register",({body})=>{
     const auth0_secret=body.auth0_secret;
     const expected=Bun.env.AUTH0_SECRET;
     if(expected==undefined){
@@ -57,7 +57,7 @@ app.get("/",({set})=>{
     if(!found){
         throw status(403);
     }
-    function isRetryableError(err:Error) {
+    function isRetryableError(err:Error|any) {
         const msg = err?.message?.toLowerCase() || "";
 
         return (
@@ -68,15 +68,19 @@ app.get("/",({set})=>{
             msg.includes("429")
         );
     }
-    return await get_connection(async(db)=>{
-        db`insert into account(uid,username,profile) values(${body.uid},${body.username},${body.profile}) 
-        on conflict(uid) do nothing`.then(()=>{}).catch(async(err)=>{
-            if(isRetryableError(err)){
+    get_connection(async(db)=>{
+        for(let i=0;i<3;i++){
+            try{
                 await db`insert into account(uid,username,profile) values(${body.uid},${body.username},${body.profile}) 
                 on conflict(uid) do nothing`;
+                break;
+            }catch(e){
+                if(!isRetryableError(e)){
+                    break;
+                }
             }
-        });
-    });
+        }
+    }).then(()=>{});
 },
     {body:z.object({
         username:z.string().max(50),
