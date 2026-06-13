@@ -18,14 +18,19 @@ async def run():
                 #output JSONB
             #);
         #''')
-        await con.execute("create type problem_status as enum('none','attempted','solved')")
-        await con.execute("create type user_reaction as enum('disliked','none','liked')")
-        await con.execute('''create table problem_info(
-                            uid text,
-                            problem_id integer,
-                            status problem_status,
-                            reaction user_reaction,
-                            primary key(problem_id,uid) 
+        #await con.execute("create type problem_status as enum('none','attempted','solved')")
+        #await con.execute("create type user_reaction as enum('disliked','none','liked')")
+        #await con.execute('''create table problem_info(
+                            #uid text,
+                            #problem_id integer,
+                            #status problem_status,
+                            #reaction user_reaction,
+                            #primary key(problem_id,uid) 
+                          #)''')
+        await con.execute('''create table account(
+                            uid TEXT primary key,
+                            username TEXT,
+                            profile TEXT
                           )''')
 import asyncio
 asyncio.run(run())

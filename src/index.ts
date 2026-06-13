@@ -1,7 +1,9 @@
-import {Elysia} from "elysia";
+import {Elysia,status} from "elysia";
 import { problem_route } from "./problem";
 import { cors } from '@elysiajs/cors'
 import { close_db } from "./tools";
+import z from "zod";
+import { get_connection } from "./tools";
 const app=new Elysia();
 app.use(cors());
 app.use(problem_route);
@@ -39,7 +41,32 @@ app.get("/",({set})=>{
         <div style="margin-top:12px;dislay:block;text-align:center">some other text</div>
         </body>
     `;
-});
+}).post("/register",async({body})=>{
+    const auth0_secret=body.auth0_secret;
+    const expected=Bun.env.AUTH0_SECRET;
+    if(expected==undefined){
+        throw status(500);
+    }
+    let found=true;
+    for(let i=0;i<expected.length;i++){
+        if(expected[i]!=auth0_secret[i]){
+            found=false;
+        }
+    }
+    if(!found){
+        throw status(403);
+    }
+    return await get_connection(async(db)=>{
+        await db`insert into account(uid,username,profile) values(${body.uid},${body.username},${body.profile}) 
+        on conflict(uid) do nothing`;
+    });
+},
+    {body:z.object({
+        username:z.string().max(50),
+        uid:z.string().max(256),
+        profile:z.string().max(128),
+        auth0_secret:z.string().max(50).default("")})
+    });
 if(Bun.env.LISTEN=='true'){
     await start_app();
 }

@@ -40,11 +40,15 @@ problem_route.use(auth_middleware).get('/home',async ({set,user})=>{
     if(user==null){throw status(401,"please login to like");}
     return await get_connection(async(db)=>{
         return await db.begin(async(db)=>{
+            const stat=await db`select reaction from problem_info where problem_id=${query.problem_id} and 
+            uid=${user.user_id} for update`;
             let res=await db`insert into problem_info(problem_id,uid,status,reaction) values(${query.problem_id},
             ${user.user_id},'none','liked') on conflict(problem_id,uid) do update set reaction='liked' 
             where problem_info.reaction!='liked' returning 1`;
             if(!res.length){throw status(403,"you had already liked this post");}
-            res=await db`update problem set reaction=reaction+1 where id=${query.problem_id} returning 1`;
+            const add=(stat.length && stat[0]["reaction"]=="disliked")?2:1;
+            console.log(`stat_size=${stat.length},val=${JSON.stringify(stat)},add=${add}\n`);
+            res=await db`update problem set reaction=reaction+${add} where id=${query.problem_id} returning 1`;
             if(!res.length){
                 throw status(404,"problem not found");
             }
@@ -56,11 +60,15 @@ problem_route.use(auth_middleware).get('/home',async ({set,user})=>{
     if(user==null){throw status(401,"please login to dislike");}
     return await get_connection(async(db)=>{
         return await db.begin(async(db)=>{
+            const stat=await db`select reaction from problem_info where problem_id=${query.problem_id} and 
+            uid=${user.user_id} for update`;
             let res=await db`insert into problem_info(problem_id,uid,status,reaction) values(${query.problem_id},
             ${user.user_id},'none','disliked') on conflict(problem_id,uid) do update set reaction='disliked' 
             where problem_info.reaction!='disliked' returning 1`;
             if(!res.length){throw status(403,"you had already disliked this post");}
-            res=await db`update problem set reaction=reaction-1 where id=${query.problem_id} returning 1`;
+            const add=(stat.length && stat[0]["reaction"]=="liked")?2:1;
+            console.log(`stat=${JSON.stringify(stat)},add=${add}\n`);
+            res=await db`update problem set reaction=reaction-${add} where id=${query.problem_id} returning 1`;
             if(!res.length){
                 throw status(404,"problem not found");
             }
