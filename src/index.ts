@@ -57,9 +57,25 @@ app.get("/",({set})=>{
     if(!found){
         throw status(403);
     }
+    function isRetryableError(err:Error) {
+        const msg = err?.message?.toLowerCase() || "";
+
+        return (
+            msg.includes("connection") ||
+            msg.includes("timeout") ||
+            msg.includes("econnreset") ||
+            msg.includes("deadlock") ||
+            msg.includes("429")
+        );
+    }
     return await get_connection(async(db)=>{
-        await db`insert into account(uid,username,profile) values(${body.uid},${body.username},${body.profile}) 
-        on conflict(uid) do nothing`;
+        db`insert into account(uid,username,profile) values(${body.uid},${body.username},${body.profile}) 
+        on conflict(uid) do nothing`.then(()=>{}).catch(async(err)=>{
+            if(isRetryableError(err)){
+                await db`insert into account(uid,username,profile) values(${body.uid},${body.username},${body.profile}) 
+                on conflict(uid) do nothing`;
+            }
+        });
     });
 },
     {body:z.object({
