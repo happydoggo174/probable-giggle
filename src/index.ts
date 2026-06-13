@@ -48,13 +48,7 @@ app.get("/",({set})=>{
     if(expected==undefined){
         throw status(500);
     }
-    let found=true;
-    for(let i=0;i<expected.length;i++){
-        if(expected[i]!=auth0_secret[i]){
-            found=false;
-        }
-    }
-    if(!found){
+    if(auth0_secret.length!=expected.length || !crypto.timingSafeEqual(Buffer.from(auth0_secret),Buffer.from(expected))){
         throw status(403);
     }
     function isRetryableError(err:Error|any) {
