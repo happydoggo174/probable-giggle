@@ -15,7 +15,8 @@ async def run():
                 #difficulty problem_difficulty,
                 #reaction integer default 0,
                 #parameter text[],
-                #output JSONB
+                #output JSONB,
+                #comment_count INTEGER DEFAULT 0
             #);
         #''')
         #await con.execute("create type problem_status as enum('none','attempted','solved')")
@@ -32,7 +33,6 @@ async def run():
                             #username TEXT,
                             #profile TEXT
                           #)''')
-        await con.execute("drop table comment")
         await con.execute('''create table comment(
                             problem_id INTEGER,
                             user_id TEXT,

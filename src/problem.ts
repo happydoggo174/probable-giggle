@@ -7,9 +7,10 @@ problem_route.use(auth_middleware).get('/home',async ({set,user})=>{
     return await get_connection(async (db)=>{
         if(!user){
             set.headers["cache-control"]="public, s-maxage=360, stale-while-revalidate=60";
-            return await db`select title,difficulty,reaction,id from problem`;
+            return await db`select title,difficulty,reaction,id,comment_count from problem`;
         }
-        return await db`select title,difficulty,problem.reaction,id,status from problem left join problem_info 
+        return await db`select title,difficulty,problem.reaction,id,status,comment_count from problem 
+        left join problem_info 
         on problem.id=problem_info.problem_id and problem_info.uid=${user.user_id}`;
     });
 }

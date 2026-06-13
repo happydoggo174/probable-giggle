@@ -17,11 +17,17 @@ comment_route.get("/",async({query})=>{
 ).use(auth_middleware).post("/make",async({body,user})=>{
     if(!user){throw status(401,"please login to comment");}
     return await get_connection(async(db)=>{
-        const resp=await db`insert into comment(problem_id,user_id,content) values(
-        ${body.problem_id},${user.user_id},${body.content}) on conflict do nothing returning 1 as found`;
-        if(!resp[0].found){
-            throw status(403,"only 1 comment per account");
-        }
+        return await db.begin(async(db)=>{
+            const resp=await db`insert into comment(problem_id,user_id,content) values(
+            ${body.problem_id},${user.user_id},${body.content}) on conflict do nothing returning 1 as found`;
+            if(!resp.length){
+                throw status(403,"only 1 comment per account");
+            }
+            const r=await db`update problem set comment_count=comment_count+1 where id=${body.problem_id} returning 1 as done`;
+            if(!r.length){
+                throw status(404,"problem not found");
+            }
+        });
     });
 },{
     body:z.object({
