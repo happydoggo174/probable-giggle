@@ -7,7 +7,7 @@ comment_route.get("/",async({query})=>{
         return await get_connection(async(db)=>{
             const cursor=query.first_uid?db`and user_id>${query.first_uid}`:db``;
             return await db`select content,username,profile from comment inner join account 
-            on comment.user_id=account.uid where problem_id=${query.problem_id} ${cursor}  order by user_id`;
+            on comment.user_id=account.uid where problem_id=${query.problem_id} ${cursor}  order by user_id limit 20`;
         });
     },
     {query:z.object({
