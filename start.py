@@ -27,10 +27,17 @@ async def run():
                             #reaction user_reaction,
                             #primary key(problem_id,uid) 
                           #)''')
-        await con.execute('''create table account(
-                            uid TEXT primary key,
-                            username TEXT,
-                            profile TEXT
+        #await con.execute('''create table account(
+                            #uid TEXT primary key,
+                            #username TEXT,
+                            #profile TEXT
+                          #)''')
+        await con.execute("drop table comment")
+        await con.execute('''create table comment(
+                            problem_id INTEGER,
+                            user_id TEXT,
+                            content TEXT,
+                            primary key(problem_id,user_id)
                           )''')
 import asyncio
 asyncio.run(run())

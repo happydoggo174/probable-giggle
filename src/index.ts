@@ -1,12 +1,13 @@
 import {Elysia,status} from "elysia";
 import { problem_route } from "./problem";
+import  comment_route from "./comment";
 import { cors } from '@elysiajs/cors'
 import { close_db } from "./tools";
 import z from "zod";
 import { get_connection } from "./tools";
 const app=new Elysia();
 app.use(cors());
-app.use(problem_route);
+app.use(problem_route).use(comment_route);
 app.onStop(async()=>{
     await close_db();
 });
