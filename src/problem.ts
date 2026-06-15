@@ -48,7 +48,6 @@ problem_route.use(auth_middleware).get('/home',async ({set,user})=>{
             where problem_info.reaction!='liked' returning 1`;
             if(!res.length){throw status(403,"you had already liked this post");}
             const add=(stat.length && stat[0]["reaction"]=="disliked")?2:1;
-            console.log(`stat_size=${stat.length},val=${JSON.stringify(stat)},add=${add}\n`);
             res=await db`update problem set reaction=reaction+${add} where id=${query.problem_id} returning 1`;
             if(!res.length){
                 throw status(404,"problem not found");
@@ -68,7 +67,6 @@ problem_route.use(auth_middleware).get('/home',async ({set,user})=>{
             where problem_info.reaction!='disliked' returning 1`;
             if(!res.length){throw status(403,"you had already disliked this post");}
             const add=(stat.length && stat[0]["reaction"]=="liked")?2:1;
-            console.log(`stat=${JSON.stringify(stat)},add=${add}\n`);
             res=await db`update problem set reaction=reaction-${add} where id=${query.problem_id} returning 1`;
             if(!res.length){
                 throw status(404,"problem not found");

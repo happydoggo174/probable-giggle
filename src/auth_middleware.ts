@@ -39,12 +39,10 @@ const auth_middleware=new Elysia({name:"auth middleware"}).derive({as:"global"},
         return {user};
     }
     if(!auth_header){
-        console.log("no auth header found\n");
         return {user};
     }
     const auth_token=auth_header.split("Bearer ")[1]?.trim();
     if(!auth_token){
-        console.log('undefined auth header'); 
         throw status(403,"invalid auth token");
     }
     if(!jwt_keys){

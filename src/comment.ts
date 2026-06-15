@@ -32,5 +32,5 @@ comment_route.get("/",async({query})=>{
 },{
     body:z.object({
         problem_id:z.coerce.number().positive(),
-        content:z.string().max(200)})})
+        content:z.string().max(250)})})
 export default comment_route;
