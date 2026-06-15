@@ -16,7 +16,7 @@ problem_route.use(auth_middleware).get('/home',async ({set,user})=>{
 }
 ).get("/detail",async ({query,set})=>{
     return await get_connection(async(db)=>{
-        const data=await db`select title,description,author_name as author,parameter,output,reaction 
+        const data=await db`select title,description,author_name as author,comment_count,parameter,output,reaction 
         from problem where id=${query.problem_id}`;
         if(!data.length){
             throw status(404,"problem not found");
