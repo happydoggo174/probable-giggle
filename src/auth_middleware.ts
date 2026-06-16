@@ -1,5 +1,9 @@
 import {Elysia,status} from "elysia";
 import { createRemoteJWKSet,jwtVerify,JWTPayload } from "jose";
+const permission:Map<string,string[]>=new Map([
+    ["admin",["delete post",]]
+]);
+Object.freeze(permission);
 class session{
     username:string;
     user_id:string;
@@ -10,16 +14,20 @@ class session{
         this.priv=priv;
     }
     has_capabilities(action:string) {
-        return this.priv==="admin";    
+        return permission.get(this.priv)?.indexOf(action)!=-1;    
     }
 }
 function make_session(payload:JWTPayload){
     const username = payload[`https://api.gomath.com/username`] || '';
     const user_id=payload.sub;
-    if(typeof username!="string" || user_id==undefined){
+    const priv=payload[`https://api.gomath.com/role`];
+    if(typeof username!="string" || user_id==undefined || !Array.isArray(priv)){
         throw status(403,"invalid jwt claim set");
     }
-    const user_priv='user';
+    let user_priv='user';
+    if(priv.length){
+        user_priv=priv[0];
+    }
     return new session(username,user_id,user_priv);
 }
 let jwt_keys:null|ReturnType<typeof createRemoteJWKSet>=null;

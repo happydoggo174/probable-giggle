@@ -100,12 +100,18 @@ problem_route.use(auth_middleware).get('/home',async ({set,user})=>{
     if(!user){throw status(401,"please login to delete");}
     return await get_connection(async(db)=>{
         return await db.begin(async(db)=>{
-            const res=await db`delete from problem where id=${query.problem_id} and author_id=${user.user_id} returning 1`;
-            if(!res.length){throw status(404,"problem not found");}
+            const r=await db`select author_id from problem where id=${query.problem_id}`;
+            if(!r.length){throw status(404,"problem not found");}
+            if(!user.has_capabilities("delete post")  && r[0]["author_id"]!=user.user_id){
+                throw status(403);
+            }
             await Promise.all([
+                db`delete from problem where id=${query.problem_id}`,
                 db`delete from comment where problem_id=${query.problem_id}`,
                 db`delete from problem_info where problem_id=${query.problem_id}`
             ]);
         });
     });
-},{query:z.object({problem_id:z.coerce.number().positive()})});
+},{query:z.object({
+    problem_id:z.coerce.number().positive()})}
+).post("/make",async()=>{},{});
