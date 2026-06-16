@@ -96,4 +96,16 @@ problem_route.use(auth_middleware).get('/home',async ({set,user})=>{
         problem_id:z.coerce.number(),
         result:z.string()
     })
-});
+}).delete("/remove",async({query,user})=>{
+    if(!user){throw status(401,"please login to delete");}
+    return await get_connection(async(db)=>{
+        return await db.begin(async(db)=>{
+            const res=await db`delete from problem where id=${query.problem_id} and author_id=${user.user_id} returning 1`;
+            if(!res.length){throw status(404,"problem not found");}
+            await Promise.all([
+                db`delete from comment where problem_id=${query.problem_id}`,
+                db`delete from problem_info where problem_id=${query.problem_id}`
+            ]);
+        });
+    });
+},{query:z.object({problem_id:z.coerce.number().positive()})});
