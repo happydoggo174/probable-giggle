@@ -126,7 +126,7 @@ problem_route.use(auth_middleware).get('/home',async ({set,user})=>{
     return await get_connection(async(db)=>{
         const res=await db`insert into problem(title,author_id,author_name,description,difficulty,
         parameter,output) values(${body.title},${user.user_id},${user.username},${body.description},${body.difficulty},
-    ${db.array(body.parameter)},${output}) on conflict do nothing returning 1`;
+    ${db.array(body.parameter,"TEXT")},${output}) on conflict do nothing returning 1`;
         if(!res.length){throw status(409);}
     });    
 },

@@ -14,7 +14,8 @@ export async function run_test(expr:string,parameter:Array<string>,test_input:Ar
         for(let i=0;i<parameter.length;i++){
             param[parameter[i]]=inp[i];
         }
-        output.push(Object.assign(param,{output:calculate(expr,param)}));
+        const out=Object.assign({},param,{output:calculate(expr,param)});
+        output.push(out);
     });
     return output;
 }
