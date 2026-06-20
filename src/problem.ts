@@ -2,6 +2,7 @@ import {z} from "zod";
 import {Elysia,status} from "elysia";
 import { get_connection } from "./tools";
 import auth_middleware from "./auth_middleware";
+import {run_test} from "./testcase";
 export const problem_route=new Elysia({prefix:"/problem"});
 problem_route.use(auth_middleware).get('/home',async ({set,user})=>{
     return await get_connection(async (db)=>{
@@ -114,4 +115,26 @@ problem_route.use(auth_middleware).get('/home',async ({set,user})=>{
     });
 },{query:z.object({
     problem_id:z.coerce.number().positive()})}
-).post("/make",async()=>{},{});
+).post("/make",async({user,body})=>{
+    if(!user){throw status(401,"please login to post");}
+    let output=[];
+    try{
+        output=await run_test(body.function,body.parameter,body.test_case);
+    }catch{
+        throw status(422,"invaid test case/function");
+    }
+    return await get_connection(async(db)=>{
+        const res=await db`insert into problem(title,author_id,author_name,description,difficulty,
+        parameter,output) values(${body.title},${user.user_id},${user.username},${body.description},${body.difficulty},
+    ${db.array(body.parameter)},${output}) on conflict do nothing returning 1`;
+        if(!res.length){throw status(409);}
+    });    
+},
+    {body:z.object({
+        title:z.string().max(80),
+        description:z.string().max(400),
+        difficulty:z.union([z.string("easy"),z.string("medium"),z.string("hard")]),
+        parameter:z.array(z.string().max(30)).max(20),
+        function:z.string().max(1000),
+        test_case:z.array(z.array(z.number()).max(20)).max(10)
+    })});
