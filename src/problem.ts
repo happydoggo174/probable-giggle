@@ -17,7 +17,7 @@ problem_route.use(auth_middleware).get('/home',async ({set,user})=>{
 }
 ).get("/detail",async ({query,set})=>{
     return await get_connection(async(db)=>{
-        const data=await db`select title,description,author_name as author,comment_count,parameter,output,reaction 
+        const data=await db`select title,description,author_name as author,author_id,comment_count,parameter,output,reaction 
         from problem where id=${query.problem_id}`;
         if(!data.length){
             throw status(404,"problem not found");
@@ -131,7 +131,7 @@ problem_route.use(auth_middleware).get('/home',async ({set,user})=>{
     });    
 },
     {body:z.object({
-        title:z.string().max(80),
+        title:z.string().max(80).min(1),
         description:z.string().max(400),
         difficulty:z.union([z.string("easy"),z.string("medium"),z.string("hard")]),
         parameter:z.array(z.string().max(30)).max(20),
