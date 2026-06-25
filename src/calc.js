@@ -362,7 +362,8 @@ function calculate_internal(itr,param,options){
  * @param {Object} param 
  */
 export function calculate(expr,param){
-    const out=calculate_internal(parse(expr),param,{});
+    const t=Object.assign({pi:Math.PI,e:Math.E},param);
+    const out=calculate_internal(parse(expr),t,{});
     const budget=14-(Math.ceil(Math.log10(Math.abs(out)))+1);
     if(budget<=0){return Math.round(out);}
     const rounder=Math.pow(10,budget);
