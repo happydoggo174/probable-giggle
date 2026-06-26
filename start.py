@@ -16,7 +16,8 @@ async def run():
                 #reaction integer default 0,
                 #parameter text[],
                 #output JSONB,
-                #comment_count INTEGER DEFAULT 0
+                #comment_count INTEGER DEFAULT 0,
+                #display_name TEXT[][]
             #);
         #''')
         #await con.execute("create type problem_status as enum('none','attempted','solved')")

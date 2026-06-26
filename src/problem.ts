@@ -3,6 +3,71 @@ import {Elysia,status} from "elysia";
 import { get_connection } from "./tools";
 import auth_middleware from "./auth_middleware";
 import {run_test} from "./testcase";
+function compare_float(a:number,b:number){
+    return Math.abs(a-b)<1e-10;
+}
+function strict_parse_float(n:string){
+    for(let i=0;i<n.length;i++){
+        if((n[i]>'9' || n[i]<'0') && n[i]!='-' && n[i]!='.' && n[i]!=',' && n[i]!='e' && n[i]!='+'){
+            return Number.NaN;
+        }
+    }
+    return parseFloat(n);
+}
+function validate_number(name:string[][]|undefined,test:number[][]){
+    if(name){
+        if(name.length!=test.length){
+            throw status(422,'mismatch testcase count');
+        }
+        for(let i=0;i<name.length;i++){
+            if(name[i].length!=test[i].length){
+                throw status(422,'mismatch count per testcase');
+            }
+            for(let j=0;j<name[i].length;j++){
+                const num=name[i][j];
+                if(num.endsWith('%')){
+                    if(!compare_float(strict_parse_float(num.slice(0,num.length-1))/100,test[i][j])){
+                        throw status(422,"mismatched precentage value");
+                    }
+                }else{
+                    const part=num.split('|');
+                    if(part.length==2 || part.length==3){
+                        const deno=strict_parse_float(part[part.length-1]);
+                        if(Number.isNaN(deno) || deno==0){
+                            throw status(422,"invalid fraction");
+                        }
+                        const top=strict_parse_float(part[part.length-2]);
+                        if(Number.isNaN(top)){
+                            throw status(422,"invalid fraction");
+                        }
+                        let sum=top/deno;
+                        if(part.length==2){
+                            if(!compare_float(sum,test[i][j])){
+                                throw status(422,"fraction value mismatch");
+                            }
+                        }else{
+                            const base=strict_parse_float(part[0]);
+                            if(Number.isNaN(base)){
+                                throw status(422,"invalid multiplier for fraction");
+                            }
+                            if(!compare_float(sum+base,test[i][j])){
+                                throw status(422,"fraction value mismatch");
+                            }
+                        }
+                    }else{
+                        if(part.length!=1){
+                            throw status(422,"unrecognized numeric type");
+                        }
+                        const n=strict_parse_float(part[0]);
+                        if(Number.isNaN(n) || !compare_float(n,test[i][j])){
+                            throw status(422,"invalid decimal")
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
 export const problem_route=new Elysia({prefix:"/problem"});
 problem_route.use(auth_middleware).get('/home',async ({set,user})=>{
     return await get_connection(async (db)=>{
@@ -17,8 +82,8 @@ problem_route.use(auth_middleware).get('/home',async ({set,user})=>{
 }
 ).get("/detail",async ({query,set})=>{
     return await get_connection(async(db)=>{
-        const data=await db`select title,description,author_name as author,author_id,comment_count,parameter,output,reaction 
-        from problem where id=${query.problem_id}`;
+        const data=await db`select title,description,author_name as author,author_id,comment_count,parameter,output,reaction,
+        display_name from problem where id=${query.problem_id}`;
         if(!data.length){
             throw status(404,"problem not found");
         }
@@ -118,15 +183,18 @@ problem_route.use(auth_middleware).get('/home',async ({set,user})=>{
 ).post("/make",async({user,body})=>{
     if(!user){throw status(401,"please login to post");}
     let output=[];
+    validate_number(body.display_name,body.test_case);
     try{
         output=await run_test(body.function,body.parameter,body.test_case);
     }catch{
         throw status(422,"invaid test case/function");
     }
+    const out=body.display_name?body.display_name:body.test_case.map(v=>v.map(z=>z.toString()));
     return await get_connection(async(db)=>{
         const res=await db`insert into problem(title,author_id,author_name,description,difficulty,
-        parameter,output) values(${body.title},${user.user_id},${user.username},${body.description},${body.difficulty},
-    ${db.array(body.parameter,"TEXT")},${output}) on conflict do nothing returning 1`;
+        parameter,output,display_name) values(${body.title},${user.user_id},${user.username},${body.description}
+        ,${body.difficulty},${db.array(body.parameter,"TEXT")},${output},${db.array(out,"TEXT[]")}) 
+        on conflict do nothing returning 1`;
         if(!res.length){throw status(409);}
     });    
 },
@@ -136,5 +204,6 @@ problem_route.use(auth_middleware).get('/home',async ({set,user})=>{
         difficulty:z.union([z.string("easy"),z.string("medium"),z.string("hard")]),
         parameter:z.array(z.string().max(30)).max(20),
         function:z.string().max(1000),
-        test_case:z.array(z.array(z.number()).max(20)).max(10)
+        test_case:z.array(z.array(z.number()).max(20)).max(10),
+        display_name:z.array(z.array(z.string().max(20).min(1)).max(20)).max(10).optional()
     })});
