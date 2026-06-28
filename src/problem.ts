@@ -30,38 +30,26 @@ function validate_number(name:string[][]|undefined,test:number[][]){
                         throw status(422,"mismatched precentage value");
                     }
                 }else{
-                    const part=num.split('|');
+                    const part=num.split('|').map(v=>{
+                        const n=strict_parse_float(v);
+                        if(Number.isNaN(n)){
+                            throw status(422,'invalid number');
+                        }
+                        return n;
+                    });
                     if(part.length==2 || part.length==3){
-                        const deno=strict_parse_float(part[part.length-1]);
-                        if(Number.isNaN(deno) || deno==0){
+                        if(part[part.length-1]==0){
                             throw status(422,"invalid fraction");
                         }
-                        const top=strict_parse_float(part[part.length-2]);
-                        if(Number.isNaN(top)){
+                        const sum=part[part.length-2]/part[part.length-1]+((part.length==3)?part[0]:0);
+                        if(!compare_float(sum,test[i][j])){
                             throw status(422,"invalid fraction");
-                        }
-                        let sum=top/deno;
-                        if(part.length==2){
-                            if(!compare_float(sum,test[i][j])){
-                                throw status(422,"fraction value mismatch");
-                            }
-                        }else{
-                            const base=strict_parse_float(part[0]);
-                            if(Number.isNaN(base)){
-                                throw status(422,"invalid multiplier for fraction");
-                            }
-                            if(!compare_float(sum+base,test[i][j])){
-                                throw status(422,"fraction value mismatch");
-                            }
                         }
                     }else{
                         if(part.length!=1){
                             throw status(422,"unrecognized numeric type");
                         }
-                        const n=strict_parse_float(part[0]);
-                        if(Number.isNaN(n) || !compare_float(n,test[i][j])){
-                            throw status(422,"invalid decimal")
-                        }
+                        return part[0];
                     }
                 }
             }
