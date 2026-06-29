@@ -31,8 +31,8 @@ function validate_number(name:string[][]|undefined,test:number[][]){
         }
         for(let j=0;j<name[i].length;j++){
             const num=name[i][j];
-            if(num.endsWith('%')){
-                if(!compare_float(strict_parse_float(num.slice(0,num.length-1))/100,test[i][j])){
+            if(num.indexOf('|')==-1){
+                if(!compare_float(parse_percentage(num),test[i][j])){
                     throw status(422,"mismatched precentage value");
                 }
                 return;
