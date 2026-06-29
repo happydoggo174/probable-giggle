@@ -13,6 +13,13 @@ function strict_parse_float(n:string){
     }
     return parseFloat(n);
 }
+function parse_percentage(n:string){
+    if(n===null || n===undefined){return Number.NaN;}
+    if(n.endsWith('%')){
+        return strict_parse_float(n.slice(0,n.length-1))/100;
+    }
+    return strict_parse_float(n);
+}
 function validate_number(name:string[][]|undefined,test:number[][]){
     if(name===undefined || name===null){return;}
     if(name.length!=test.length){
@@ -31,7 +38,7 @@ function validate_number(name:string[][]|undefined,test:number[][]){
                 return;
             }
             const part=num.split('|').map(v=>{
-                const n=strict_parse_float(v);
+                const n=parse_percentage(v);
                 if(Number.isNaN(n)){
                     throw status(422,'invalid number');
                 }
