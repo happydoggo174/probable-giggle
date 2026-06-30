@@ -32,5 +32,23 @@ comment_route.get("/",async({query})=>{
 },{
     body:z.object({
         problem_id:z.coerce.number().positive(),
-        content:z.string().max(250)})})
+        content:z.string().max(250)})}).
+delete('/remove',async({user,query})=>{
+    if(user==null){
+        throw status(401,"please login to delete comment");
+    }
+    return await get_connection(async(db)=>{
+        return await db.begin(async(db)=>{
+           const resp=await db`delete from comment 
+           where problem_id=${query.problem_id} and user_id=${user.user_id} returning 1`;
+           if(!resp.length){
+            throw status(404,"comment not found");
+           }
+           await db`update problem set comment_count=comment_count-1 where id=${query.problem_id}`;
+        });
+    });
+},
+{query:z.object({
+    problem_id:z.coerce.number()
+})});
 export default comment_route;
