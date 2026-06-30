@@ -19,7 +19,7 @@ comment_route.get("/",async({query})=>{
     return await get_connection(async(db)=>{
         return await db.begin(async(db)=>{
             const resp=await db`insert into comment(problem_id,user_id,content) values(
-            ${body.problem_id},${user.user_id},${body.content}) on conflict do nothing returning 1 as found`;
+            ${body.problem_id},${user.user_id},${body.content}) on conflict do nothing returning 1`;
             if(!resp.length){
                 throw status(403,"only 1 comment per account");
             }

@@ -17,7 +17,8 @@ async def run():
                 #parameter text[],
                 #output JSONB,
                 #comment_count INTEGER DEFAULT 0,
-                #display_name TEXT[][]
+                #display_name TEXT[][],
+                #hint TEXT[]
             #);
         #''')
         #await con.execute("create type problem_status as enum('none','attempted','solved')")
@@ -34,11 +35,11 @@ async def run():
                             #username TEXT,
                             #profile TEXT
                           #)''')
-        await con.execute('''create table comment(
-                            problem_id INTEGER,
-                            user_id TEXT,
-                            content TEXT,
-                            primary key(problem_id,user_id)
-                          )''')
+        #await con.execute('''create table comment(
+                            #problem_id INTEGER,
+                            #user_id TEXT,
+                            #content TEXT,
+                            #primary key(problem_id,user_id)
+                          #)''')
 import asyncio
 asyncio.run(run())

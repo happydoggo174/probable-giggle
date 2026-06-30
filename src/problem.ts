@@ -76,7 +76,7 @@ problem_route.use(auth_middleware).get('/home',async ({set,user})=>{
 ).get("/detail",async ({query,set})=>{
     return await get_connection(async(db)=>{
         const data=await db`select title,description,author_name as author,author_id,comment_count,parameter,output,reaction,
-        display_name from problem where id=${query.problem_id}`;
+        display_name,hint from problem where id=${query.problem_id}`;
         if(!data.length){
             throw status(404,"problem not found");
         }
@@ -183,10 +183,11 @@ problem_route.use(auth_middleware).get('/home',async ({set,user})=>{
         throw status(422,"invaid test case/function");
     }
     const out=body.display_name?body.display_name:body.test_case.map(v=>v.map(z=>z.toString()));
+    const hint=body.hint??[];
     return await get_connection(async(db)=>{
         const res=await db`insert into problem(title,author_id,author_name,description,difficulty,
-        parameter,output,display_name) values(${body.title},${user.user_id},${user.username},${body.description}
-        ,${body.difficulty},${db.array(body.parameter,"TEXT")},${output},${db.array(out,"TEXT[]")}) 
+        parameter,output,display_name,hint) values(${body.title},${user.user_id},${user.username},${body.description}
+        ,${body.difficulty},${db.array(body.parameter,"TEXT")},${output},${db.array(out,"TEXT[]")},${db.array(hint,'TEXT')}) 
         on conflict do nothing returning 1`;
         if(!res.length){throw status(409);}
     });    
@@ -198,5 +199,6 @@ problem_route.use(auth_middleware).get('/home',async ({set,user})=>{
         parameter:z.array(z.string().max(30)).max(20),
         function:z.string().max(1000),
         test_case:z.array(z.array(z.number()).max(20)).max(10),
-        display_name:z.array(z.array(z.string().max(20).min(1)).max(20)).max(10).optional()
+        display_name:z.array(z.array(z.string().max(20).min(1)).max(20)).max(10).optional(),
+        hint:z.array(z.string().max(200)).max(10).optional()
     })});
