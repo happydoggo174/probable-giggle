@@ -90,12 +90,11 @@ problem_route.use(auth_middleware).get('/home',async ({set,user})=>{
         throw status(401,"please login to get favorite");
     }
     return await get_connection(async(db)=>{
-        const pagination=((query.last_id!=undefined)?db`where problem.id>${query.last_id}`:db``);
-        console.log(query.last_id,pagination);
+        const pagination=((query.last_id!=undefined)?db`and problem.id>${query.last_id}`:db``);
         return await db`select title,difficulty,problem.reaction,id,status,comment_count from problem 
         left join problem_info on problem_info.uid=${user.user_id} 
         and problem.id=problem_info.problem_id 
-        and problem_info.reaction='liked' ${pagination} order by problem.id limit 20`
+        where problem_info.reaction='liked' ${pagination} order by problem.id limit 20`
     });
 },{
     query:z.object({
