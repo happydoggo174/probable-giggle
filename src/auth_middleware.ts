@@ -34,6 +34,7 @@ let jwt_keys:null|ReturnType<typeof createRemoteJWKSet>=null;
 const AUTH0_DOMAIN=Bun.env.AUTH0_DOMAIN;
 const AUTH0_AUDIENCE=Bun.env.AUTH0_AUDIENCE;
 const auth_middleware=new Elysia({name:"auth middleware"}).derive({as:"global"},async ({request,headers})=>{
+    console.log("auth middleware running");
     if (request.method === "OPTIONS") {
         return { user: null };
     }

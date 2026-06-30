@@ -41,5 +41,6 @@ async def run():
                             #content TEXT,
                             #primary key(problem_id,user_id)
                           #)''')
+        await con.execute("create index fav_prob_index on problem_info(uid,problem_id) where reaction='liked'")
 import asyncio
 asyncio.run(run())

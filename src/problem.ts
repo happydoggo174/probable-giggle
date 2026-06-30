@@ -85,7 +85,23 @@ problem_route.use(auth_middleware).get('/home',async ({set,user})=>{
     });
 },{query:z.object({
     problem_id:z.coerce.number()
-})}).get("/status",async({query,user})=>{
+})}).get('/favorite',async({query,user})=>{
+    if(user==null){
+        throw status(401,"please login to get favorite");
+    }
+    return await get_connection(async(db)=>{
+        const pagination=((query.last_id!=undefined)?db`where problem.id>${query.last_id}`:db``);
+        console.log(query.last_id,pagination);
+        return await db`select title,difficulty,problem.reaction,id,status,comment_count from problem 
+        left join problem_info on problem_info.uid=${user.user_id} 
+        and problem.id=problem_info.problem_id 
+        and problem_info.reaction='liked' ${pagination} order by problem.id limit 20`
+    });
+},{
+    query:z.object({
+        last_id:z.coerce.number().positive().optional()
+    })
+}).get("/status",async({query,user})=>{
     if(!user){throw status(401,"please login to view status");}
     return await get_connection(async(db)=>{
         const stat=await db`select status,reaction from problem_info where problem_id=${query.problem_id} 
