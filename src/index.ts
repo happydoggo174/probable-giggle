@@ -36,7 +36,7 @@ app.get("/",({set,query})=>{
     if(query.time && query.ip){
         get_connection(async(db)=>{
             await db`insert into access_log(time,address) values(${query.time},${query.ip})`
-        });
+        }).then();
     }
     return `
         <!DOCTYPE html>
