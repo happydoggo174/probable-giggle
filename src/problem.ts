@@ -76,7 +76,9 @@ problem_route.use(auth_middleware).get('/home',async ({set,user})=>{
 ).get("/detail",async ({query,set})=>{
     return await get_connection(async(db)=>{
         const data=await db`select title,description,author_name as author,author_id,comment_count,parameter,output,reaction,
-        display_name,hint from problem where id=${query.problem_id}`;
+        display_name,hint,account.profile from problem 
+        left join account on problem.author_id=account.uid 
+        where id=${query.problem_id}`;
         if(!data.length){
             throw status(404,"problem not found");
         }
@@ -95,6 +97,21 @@ problem_route.use(auth_middleware).get('/home',async ({set,user})=>{
         left join problem_info on problem_info.uid=${user.user_id} 
         and problem.id=problem_info.problem_id 
         where problem_info.reaction='liked' ${pagination} order by problem.id limit 20`
+    });
+},{
+    query:z.object({
+        last_id:z.coerce.number().positive().optional()
+    })
+}).get('/completed',async({query,user})=>{
+    if(user==null){
+        throw status(401,"please login to get completed");
+    }
+    return await get_connection(async(db)=>{
+        const pagination=((query.last_id!=undefined)?db`and problem.id>${query.last_id}`:db``);
+        return await db`select title,difficulty,problem.reaction,id,status,comment_count from problem 
+        left join problem_info on problem_info.uid=${user.user_id} 
+        and problem.id=problem_info.problem_id 
+        where problem_info.status='solved' ${pagination} order by problem.id limit 20`
     });
 },{
     query:z.object({
