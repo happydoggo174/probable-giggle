@@ -2,8 +2,9 @@ import {Elysia} from "elysia";
 import { problem_route } from "./problem";
 import  comment_route from "./comment";
 import { cors } from '@elysiajs/cors'
-import { close_db } from "./tools";
+import { close_db,get_connection } from "./tools";
 import register_route from "./register";
+import z from "zod";
 const app=new Elysia();
 app.use(cors());
 app.use(problem_route).use(comment_route).use(register_route);
@@ -30,8 +31,13 @@ async function start_app(){
         await Bun.$`pkill -INT -f ":${old_port} -"`;
     }*/
 }
-app.get("/",({set})=>{
+app.get("/",({set,query})=>{
     set.headers["content-type"]="text/html";
+    if(query.time && query.ip){
+        get_connection(async(db)=>{
+            await db`insert into access_log(time,address) values(${query.time},${query.ip})`
+        });
+    }
     return `
         <!DOCTYPE html>
         <html lang="en">
@@ -41,7 +47,10 @@ app.get("/",({set})=>{
         <div style="margin-top:12px;dislay:block;text-align:center">some other text</div>
         </body>
     `;
-})
+},{query:z.object({
+    time:z.string().optional(),
+    ip:z.string().optional()
+})})
 if(Bun.env.LISTEN=='true'){
     await start_app();
 }
