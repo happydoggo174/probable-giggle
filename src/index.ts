@@ -31,13 +31,17 @@ async function start_app(){
         await Bun.$`pkill -INT -f ":${old_port} -"`;
     }*/
 }
-app.get("/",({set,query})=>{
+app.get("/",({set,headers})=>{
     set.headers["content-type"]="text/html";
-    if(query.time && query.ip){
-        get_connection(async(db)=>{
-            await db`insert into access_log(time,address) values(${query.time},${query.ip})`
-        }).then();
-    }
+    const forwardedFor:string|undefined =headers["x-forwarded-for"];
+    const realIp = headers["x-real-ip"];
+
+    // x-forwarded-for may contain multiple IPs
+    const clientIp = forwardedFor?.split(",")[0].trim() ?? realIp;
+    const time=new Date().toLocaleString()
+    get_connection(async(db)=>{
+        db`insert into access_log(time,address) values(${time},${clientIp})`.then();
+    }).then()
     return `
         <!DOCTYPE html>
         <html lang="en">
@@ -47,10 +51,7 @@ app.get("/",({set,query})=>{
         <div style="margin-top:12px;dislay:block;text-align:center">some other text</div>
         </body>
     `;
-},{query:z.object({
-    time:z.string().optional(),
-    ip:z.string().optional()
-})})
+},)
 if(Bun.env.LISTEN=='true'){
     await start_app();
 }
