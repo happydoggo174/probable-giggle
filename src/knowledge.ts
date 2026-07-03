@@ -41,7 +41,7 @@ post("/make",async({body,user})=>{
         title:z.string().min(1).max(150),
         content:z.string().min(1).max(2500),
         category:z.array(z.string().min(0).max(30)).max(12),
-        difficulty:z.union([z.string("easy"),z.string("medium"),z.string("hard")])    
+        difficulty:z.union([z.literal("easy"),z.literal("medium"),z.literal("hard")])    
     })}).delete("/drop",async({user,query})=>{
         if(!user){
             throw status(401,"please login to delete knowledge");
@@ -98,7 +98,7 @@ post("/react",async({query,user})=>{
                 }
             }else{
                 let out=null;
-                if(query.reaction=='liked'){
+                if(query.reaction=='like'){
                     out=await db`update knowledge set likes=likes+1 where id=${query.knowledge_id} returning 1`;
                 }else{
                     out=await db`update knowledge set dislikes=dislikes+1 where id=${query.knowledge_id} returning 1`;
@@ -111,6 +111,6 @@ post("/react",async({query,user})=>{
     });
 },{query:z.object({
     knowledge_id:z.coerce.number(),
-    reaction:z.union([z.string("like"),z.string("dislike")])
+    reaction:z.union([z.literal("like"),z.literal("dislike")])
 })});
 export default knowledge_route;
