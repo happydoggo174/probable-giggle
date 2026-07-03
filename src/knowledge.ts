@@ -39,8 +39,8 @@ post("/make",async({body,user})=>{
 },
     {body:z.object({
         title:z.string().min(1).max(150),
-        content:z.string().min(1).max(2500),
-        category:z.array(z.string().min(0).max(30)).max(12),
+        content:z.string().min(1).max(3600),
+        category:z.array(z.string().min(1).max(30)).max(12),
         difficulty:z.union([z.literal("easy"),z.literal("medium"),z.literal("hard")])    
     })}).delete("/drop",async({user,query})=>{
         if(!user){
