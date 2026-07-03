@@ -42,6 +42,24 @@ async def run():
                             #primary key(problem_id,user_id)
                           #)''')
         #await con.execute("create index fav_prob_index on problem_info(uid,problem_id) where reaction='liked'")
-        await con.execute("create index solved_prob_index on problem_info(uid,problem_id) where status='solved'")
+        #await con.execute("create index solved_prob_index on problem_info(uid,problem_id) where status='solved'")
+        #await con.execute('''create table knowledge(
+                            #id serial primary key,
+                            #title text,
+                            #content text,  
+                            #author_id text,
+                            #author_name text,
+                            #category text[],
+                            #likes integer default 0,
+                            #dislikes integer default 0
+                            #difficulty problem_difficulty
+                          #)''')
+        #await con.execute('''create table knowledge_info(
+                            #knowledge_id INTEGER,
+                            #uid text,
+                            #reaction user_reaction,
+                            #learned boolean,
+                            #primary key(knowledge_id,uid)
+                          #)''')
 import asyncio
 asyncio.run(run())

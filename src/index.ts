@@ -4,10 +4,10 @@ import  comment_route from "./comment";
 import { cors } from '@elysiajs/cors'
 import { close_db,get_connection } from "./tools";
 import register_route from "./register";
-import z from "zod";
+import knowledge_route from "./knowledge";
 const app=new Elysia();
 app.use(cors());
-app.use(problem_route).use(comment_route).use(register_route);
+app.use(problem_route).use(comment_route).use(register_route).use(knowledge_route);
 app.onStop(async()=>{
     await close_db();
 });

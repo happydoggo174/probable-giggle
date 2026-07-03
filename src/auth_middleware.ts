@@ -1,7 +1,7 @@
 import {Elysia,status} from "elysia";
 import { createRemoteJWKSet,jwtVerify,JWTPayload } from "jose";
 const permission:Map<string,string[]>=new Map([
-    ["admin",["delete post",]]
+    ["admin",["delete post","delete knowledge"]]
 ]);
 Object.freeze(permission);
 class session{
