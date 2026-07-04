@@ -39,7 +39,7 @@ post("/make",async({body,user})=>{
 },
     {body:z.object({
         title:z.string().min(1).max(150),
-        content:z.string().min(1).max(3600),
+        content:z.string().min(1).max(4500),
         category:z.array(z.string().min(1).max(30)).max(12),
         difficulty:z.union([z.literal("easy"),z.literal("medium"),z.literal("hard")])    
     })}).delete("/drop",async({user,query})=>{
@@ -56,7 +56,7 @@ post("/make",async({body,user})=>{
                     throw status(403);
                 }
             }
-            const res=await db`delete from knowledge where id=${query.knowledge_id}`;
+            const res=await db`delete from knowledge where id=${query.knowledge_id} returning 1`;
             if(!res.length){
                 throw status(404,'knowledge not found');
             }
