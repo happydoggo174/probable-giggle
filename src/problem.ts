@@ -230,9 +230,7 @@ problem_route.use(auth_middleware).get('/home',async ({set,user})=>{
         difficulty:z.union([z.string("easy"),z.string("medium"),z.string("hard")]),
         parameter:z.array(z.string().max(30).refine(p=>{
             const black=["__proto__","prototype","__constructor__","output"];
-            if(black.find(v=>v==p)!==undefined){
-                throw status(419,"invalid parameter name");
-            }
+            return black.find(v=>v==p)===undefined;
         })).max(20),
         function:z.string().max(1000),
         test_case:z.array(z.array(z.number()).max(20)).max(10),
