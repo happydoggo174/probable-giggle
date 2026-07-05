@@ -228,7 +228,12 @@ problem_route.use(auth_middleware).get('/home',async ({set,user})=>{
         title:z.string().max(80).min(1),
         description:z.string().max(400),
         difficulty:z.union([z.string("easy"),z.string("medium"),z.string("hard")]),
-        parameter:z.array(z.string().max(30)).max(20),
+        parameter:z.array(z.string().max(30).refine(p=>{
+            const black=["__proto__","prototype","__constructor__","output"];
+            if(black.find(v=>v==p)!==undefined){
+                throw status(419,"invalid parameter name");
+            }
+        })).max(20),
         function:z.string().max(1000),
         test_case:z.array(z.array(z.number()).max(20)).max(10),
         display_name:z.array(z.array(z.string().max(20).min(1)).max(20)).max(10).optional(),
