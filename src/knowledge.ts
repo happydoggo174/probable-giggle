@@ -13,7 +13,8 @@ knowledge_route.get("/home",async({query})=>{
 },{query:z.object({last_id:z.coerce.number().default(-1)})}).
 get('/detail',async({query})=>{
     return await get_connection(async(db)=>{
-        const r=await db`select id,title,content,author_id,author_name,profile,category,likes,dislikes,difficulty 
+        const r=await db`select id,title,content,plain_content,
+        author_id,author_name,profile,category,likes,dislikes,difficulty 
         from knowledge left join account 
         on knowledge.author_id=account.uid 
         where knowledge.id=${query.knowledge_id}`;
@@ -32,16 +33,17 @@ post("/make",async({body,user})=>{
         throw status(401,"please login to post knowledge");
     }
     await get_connection(async(db)=>{
-        await db`insert into knowledge(title,content,author_id,author_name,category,difficulty) 
+        await db`insert into knowledge(title,content,author_id,author_name,category,difficulty,plain_content) 
         values(${body.title},${body.content},${user.user_id},${user.username},${db.array(body.category,"TEXT")},
-        ${body.difficulty})`;
+        ${body.difficulty},${body.plain_content})`;
     });
 },
     {body:z.object({
         title:z.string().min(1).max(150),
         content:z.string().min(1).max(4500),
         category:z.array(z.string().min(1).max(30)).max(12),
-        difficulty:z.union([z.literal("easy"),z.literal("medium"),z.literal("hard")])    
+        difficulty:z.union([z.literal("easy"),z.literal("medium"),z.literal("hard")]),
+        plain_content:z.coerce.boolean().default(false)    
     })}).delete("/drop",async({user,query})=>{
         if(!user){
             throw status(401,"please login to delete knowledge");

@@ -30,7 +30,6 @@ export function* parse(expr){
     let frac=0;
     let is_frac=false;
     let has_num=false;
-    let is_abs=false;
     let digit=0;
     let br=0;
     const ops=new Set(["+","-","*","/","%","^","√","|","!","(",")",","]);
@@ -75,18 +74,6 @@ export function* parse(expr){
         }else{
             is_frac=false;
             if(ops.has(expr[i])){
-                if(expr[i]=="|"){
-                    if(has_num){
-                        yield merge_number();
-                    }
-                    if(val!=""){
-                        yield val;
-                        val="";                    
-                    }
-                    yield is_abs?")":"abs(";
-                    is_abs=!is_abs;
-                    continue;
-                }
                 if(expr[i]=="(" && func.has(val)){
                     //function case
                     if(has_num){
@@ -334,6 +321,12 @@ function calculate_internal(itr,param,options){
         if(token==')' || token==options.stop_from){
             options.stop_at=token;
             break;
+        }
+        if(token=='|'){
+            const ops={stop_from:'|'};
+            val.push(Math.abs(calculate_internal(itr,param,ops)));
+            assert_fail(ops.stop_at!='|',"missing closing | for abs");
+            continue;
         }
         if(ops[token]!=undefined){
             const pri=ops[token];

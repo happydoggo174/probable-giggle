@@ -18,7 +18,8 @@ async def run():
                 #output JSONB,
                 #comment_count INTEGER DEFAULT 0,
                 #display_name TEXT[][],
-                #hint TEXT[]
+                #hint TEXT[],
+                #plain_desc boolean default false
             #);
         #''')
         #await con.execute("create type problem_status as enum('none','attempted','solved')")
@@ -53,6 +54,7 @@ async def run():
                             #likes integer default 0,
                             #dislikes integer default 0
                             #difficulty problem_difficulty
+                            #plain_content boolean default false;
                           #)''')
         #await con.execute('''create table knowledge_info(
                             #knowledge_id INTEGER,

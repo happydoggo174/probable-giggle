@@ -76,7 +76,7 @@ problem_route.use(auth_middleware).get('/home',async ({set,user})=>{
 ).get("/detail",async ({query,set})=>{
     return await get_connection(async(db)=>{
         const data=await db`select title,description,author_name as author,author_id,comment_count,parameter,output,reaction,
-        display_name,hint,account.profile from problem 
+        display_name,hint,plain_desc,account.profile from problem 
         left join account on problem.author_id=account.uid 
         where id=${query.problem_id}`;
         if(!data.length){
@@ -218,9 +218,9 @@ problem_route.use(auth_middleware).get('/home',async ({set,user})=>{
     const hint=body.hint??[];
     return await get_connection(async(db)=>{
         const res=await db`insert into problem(title,author_id,author_name,description,difficulty,
-        parameter,output,display_name,hint) values(${body.title},${user.user_id},${user.username},${body.description}
-        ,${body.difficulty},${db.array(body.parameter,"TEXT")},${output},${db.array(out,"TEXT[]")},${db.array(hint,'TEXT')}) 
-        on conflict do nothing returning 1`;
+        parameter,output,display_name,hint,plain_desc) values(${body.title},${user.user_id},${user.username},
+        ${body.description},${body.difficulty},${db.array(body.parameter,"TEXT")},${output},${db.array(out,"TEXT[]")},
+        ${db.array(hint,'TEXT')},${body.plain_desc}) on conflict do nothing returning 1`;
         if(!res.length){throw status(409);}
     });    
 },
@@ -235,5 +235,6 @@ problem_route.use(auth_middleware).get('/home',async ({set,user})=>{
         function:z.string().max(1000),
         test_case:z.array(z.array(z.number()).max(20)).max(10),
         display_name:z.array(z.array(z.string().max(20).min(1)).max(20)).max(10).optional(),
-        hint:z.array(z.string().max(200)).max(10).optional()
+        hint:z.array(z.string().max(200)).max(10).optional(),
+        plain_desc:z.coerce.boolean().default(false)
     })});
