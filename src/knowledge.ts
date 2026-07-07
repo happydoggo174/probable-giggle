@@ -43,7 +43,7 @@ post("/make",async({body,user})=>{
         content:z.string().min(1).max(4500),
         category:z.array(z.string().min(1).max(30)).max(12),
         difficulty:z.union([z.literal("easy"),z.literal("medium"),z.literal("hard")]),
-        plain_content:z.coerce.boolean().default(false)    
+        plain_content:z.enum(["true", "false"]).default("false").transform((v) => v === "true")
     })}).delete("/drop",async({user,query})=>{
         if(!user){
             throw status(401,"please login to delete knowledge");
