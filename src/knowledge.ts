@@ -11,13 +11,26 @@ knowledge_route.get("/home",async({query})=>{
         order by id limit 20`
     });
 },{query:z.object({last_id:z.coerce.number().default(-1)})}).
-get('/detail',async({query})=>{
+use(auth_middleware).
+get('/detail',async({query,user})=>{
     return await get_connection(async(db)=>{
-        const r=await db`select id,title,content,plain_content,related_problem,
-        author_id,author_name,profile,category,likes,dislikes,difficulty 
-        from knowledge left join account 
-        on knowledge.author_id=account.uid 
-        where knowledge.id=${query.knowledge_id}`;
+        let r=null;
+        if(!user){ 
+            r=await db`select id,title,content,plain_content,related_problem,
+            author_id,author_name,profile,category,likes,dislikes,difficulty
+            from knowledge left join account 
+            on knowledge.author_id=account.uid 
+            where knowledge.id=${query.knowledge_id}`;
+        }else{
+            r=await db`select id,title,content,plain_content,related_problem,
+            author_id,author_name,profile,category,likes,dislikes,difficulty,reaction 
+            from knowledge left join account 
+            on knowledge.author_id=account.uid 
+            left join knowledge_info 
+            on knowledge_info.knowledge_id=knowledge.id 
+            and knowledge_info.uid=${user.user_id} 
+            where knowledge.id=${query.knowledge_id}`;
+        }
         if(!r.length){
             throw status(404);
         }
@@ -28,7 +41,6 @@ get('/detail',async({query})=>{
 {query:z.object({
     knowledge_id:z.coerce.number()
 })}).
-use(auth_middleware).
 post("/make",async({body,user})=>{
     if(!user){
         throw status(401,"please login to post knowledge");
@@ -94,7 +106,7 @@ post("/react",async({query,user})=>{
                     return;
                 }
                 await db`update knowledge_info set reaction=${query.reaction} 
-                where knowledge_id==${query.knowledge_id} and uid=${user.user_id}`;
+                where knowledge_id=${query.knowledge_id} and uid=${user.user_id}`;
                 let out=null;
                 if(react=='liked'){
                     out=await db`update knowledge set likes=likes-1,dislikes=dislikes+1 
@@ -110,7 +122,7 @@ post("/react",async({query,user})=>{
                 }
             }else{
                 let out=null;
-                if(query.reaction=='like'){
+                if(query.reaction=='liked'){
                     out=await db`update knowledge set likes=likes+1 where id=${query.knowledge_id} returning 1`;
                 }else{
                     out=await db`update knowledge set dislikes=dislikes+1 where id=${query.knowledge_id} returning 1`;
@@ -123,6 +135,6 @@ post("/react",async({query,user})=>{
     });
 },{query:z.object({
     knowledge_id:z.coerce.number(),
-    reaction:z.union([z.literal("like"),z.literal("dislike")])
+    reaction:z.union([z.literal("liked"),z.literal("disliked")])
 })});
 export default knowledge_route;

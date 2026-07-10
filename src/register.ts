@@ -45,7 +45,7 @@ account_route.post('/register',({body})=>{
     }).
 get("/detail",async({query})=>{
     return await get_connection(async(db)=>{
-        const account=await db`select uid,username,profile from account where uid=${query.uid}`;
+        const account=await db`select username,profile from account where uid=${query.uid}`;
         const pagination=((query.last_id!=undefined)?db`and problem.id>${query.last_id}`:db``);
         const r=await db`select title,difficulty,problem.reaction,id,status,comment_count from problem 
         left join problem_info on problem_info.uid=${query.uid} 
