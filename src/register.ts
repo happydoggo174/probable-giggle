@@ -2,8 +2,8 @@ import Elysia from "elysia";
 import { status } from "elysia";
 import z from "zod";
 import { get_connection } from "./tools";
-const register_route=new Elysia({prefix:'/register'});
-register_route.post('/',({body})=>{
+const account_route=new Elysia({prefix:'/account'});
+account_route.post('/register',({body})=>{
     const auth0_secret=body.auth0_secret;
     const expected=Bun.env.AUTH0_SECRET;
     if(expected==undefined){
@@ -43,4 +43,4 @@ register_route.post('/',({body})=>{
         profile:z.string().max(128),
         auth0_secret:z.string().max(50).default("")})
     });
-export default register_route;
+export default account_route;

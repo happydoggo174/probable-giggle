@@ -19,7 +19,8 @@ async def run():
                 #comment_count INTEGER DEFAULT 0,
                 #display_name TEXT[][],
                 #hint TEXT[],
-                #plain_desc boolean default false
+                #plain_desc boolean default false,
+                #related_problem JSONB default '{}'
             #);
         #''')
         #await con.execute("create type problem_status as enum('none','attempted','solved')")

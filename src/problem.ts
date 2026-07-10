@@ -236,5 +236,5 @@ problem_route.use(auth_middleware).get('/home',async ({set,user})=>{
         test_case:z.array(z.array(z.number()).max(20)).max(10),
         display_name:z.array(z.array(z.string().max(20).min(1)).max(20)).max(10).optional(),
         hint:z.array(z.string().max(200)).max(10).optional(),
-        plain_desc:z.enum(["true", "false"]).default("false").transform((v) => v === "true")
+        plain_desc:z.stringbool().default(false)
     })});

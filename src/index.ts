@@ -2,12 +2,12 @@ import {Elysia} from "elysia";
 import { problem_route } from "./problem";
 import  comment_route from "./comment";
 import { cors } from '@elysiajs/cors'
-import { close_db,get_connection } from "./tools";
-import register_route from "./register";
+import { close_db } from "./tools";
+import account_route from "./register";
 import knowledge_route from "./knowledge";
 const app=new Elysia();
 app.use(cors());
-app.use(problem_route).use(comment_route).use(register_route).use(knowledge_route);
+app.use(problem_route).use(comment_route).use(account_route).use(knowledge_route);
 app.onStop(async()=>{
     await close_db();
 });
@@ -33,15 +33,6 @@ async function start_app(){
 }
 app.get("/",({set,headers})=>{
     set.headers["content-type"]="text/html";
-    const forwardedFor:string|undefined =headers["x-forwarded-for"];
-    const realIp = headers["x-real-ip"];
-
-    // x-forwarded-for may contain multiple IPs
-    const clientIp = forwardedFor?.split(",")[0].trim() ?? realIp;
-    const time=new Date().toLocaleString()
-    get_connection(async(db)=>{
-        db`insert into access_log(time,address) values(${time},${clientIp})`.then();
-    }).then()
     return `
         <!DOCTYPE html>
         <html lang="en">
