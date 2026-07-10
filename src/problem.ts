@@ -96,7 +96,7 @@ problem_route.use(auth_middleware).get('/home',async ({set,user})=>{
         return await db`select title,difficulty,problem.reaction,id,status,comment_count from problem 
         left join problem_info on problem_info.uid=${user.user_id} 
         and problem.id=problem_info.problem_id 
-        where problem_info.reaction='liked' ${pagination} order by problem.id limit 20`
+        where problem_info.reaction='liked' ${pagination} order by problem.id limit 20`;
     });
 },{
     query:z.object({

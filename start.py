@@ -43,8 +43,7 @@ async def run():
                             #content TEXT,
                             #primary key(problem_id,user_id)
                           #)''')
-        #await con.execute("create index fav_prob_index on problem_info(uid,problem_id) where reaction='liked'")
-        #await con.execute("create index solved_prob_index on problem_info(uid,problem_id) where status='solved'")
+        #await con.execute('''create index prob_search on problem_info(uid,problem_id) ''')
         #await con.execute('''create table knowledge(
                             #id serial primary key,
                             #title text,
