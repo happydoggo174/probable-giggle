@@ -226,7 +226,7 @@ problem_route.use(auth_middleware).get('/home',async ({set,user})=>{
 },
     {body:z.object({
         title:z.string().max(80).min(1),
-        description:z.string().max(400),
+        description:z.string().max(600).min(1),
         difficulty:z.union([z.string("easy"),z.string("medium"),z.string("hard")]),
         parameter:z.array(z.string().max(30).refine(p=>{
             const black=["__proto__","prototype","__constructor__","output"];
