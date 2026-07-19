@@ -11,6 +11,7 @@ class session{
     }
 }
 let db:Bun.SQL|null=null;
+let supabase:any=null;
 class FileResult{
     public filename:string;
     public err:string|null;
@@ -86,4 +87,11 @@ export async function get_session(header:Record<string,string|undefined>):Promis
 export async function save_file(file:File,filter:Array<string>,dir:string="",anoymous:boolean=true,max_size:number=6000000,
                     is_public:boolean=false):Promise<FileResult> {
     return new FileResult("",null);
+}
+export async function get_cilent(){
+    const s=await import("@supabase/supabase-js");
+    if(supabase==null){
+        supabase=s.createClient(Bun.env.SUPABASE_URL!,Bun.env.SUPABASE_SECRET!);
+    }
+    return supabase
 }

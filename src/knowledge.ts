@@ -34,7 +34,6 @@ get('/detail',async({query,user})=>{
         if(!r.length){
             throw status(404);
         }
-        console.log(JSON.stringify(r[0]));
         return r[0];
     });
 },

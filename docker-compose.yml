@@ -9,6 +9,7 @@ services:
       - AUTH0_DOMAIN=dev-25r4jfrx2w3std4k.us.auth0.com
       - AUTH0_AUDIENCE=mathapi
       - JWT_TEST=j
+      - SUPABASE_URL=https://wjifwflztejubvgibbtj.supabase.co
     volumes:
      - ./src:/home/bun/app/src
   database:

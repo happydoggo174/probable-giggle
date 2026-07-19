@@ -42,7 +42,9 @@ app.get("/",({set,headers})=>{
         <div style="margin-top:12px;dislay:block;text-align:center">some other text</div>
         </body>
     `;
-},)
+},).post("/logging",({body})=>{
+    console.log(body);
+});
 if(Bun.env.LISTEN=='true'){
     await start_app();
 }
