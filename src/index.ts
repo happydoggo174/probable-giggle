@@ -45,6 +45,7 @@ app.get("/",({set,headers})=>{
 },).post("/logging",({body})=>{
     console.log("running");
     console.log(JSON.stringify(body));
+    return "working";
 });
 if(Bun.env.LISTEN=='true'){
     await start_app();
