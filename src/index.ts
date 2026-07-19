@@ -43,7 +43,8 @@ app.get("/",({set,headers})=>{
         </body>
     `;
 },).post("/logging",({body})=>{
-    console.log(body);
+    console.log("running");
+    console.log(JSON.stringify(body));
 });
 if(Bun.env.LISTEN=='true'){
     await start_app();
