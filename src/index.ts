@@ -60,9 +60,8 @@ app.get("/",({set,headers})=>{
         id:z.string(),
         email:z.string().max(120),
         raw_user_meta_data:z.object({
-            priv:z.string(),
             profile:z.string().max(100).optional(),
-            username:z.string().max(60),
+            username:z.string().max(60).optional(),
         })
     })
 }),
