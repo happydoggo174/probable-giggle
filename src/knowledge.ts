@@ -53,13 +53,13 @@ post("/make",async({body,user})=>{
                 throw status(404,e?.message);
             }
         }
-        const username:any=(await db`select username from account where uid=${user.user_id}`).values();
+        const username=(await db`select username from account where uid=${user.user_id}`);
         if(!username.length){
             console.log("missing username");
             throw status(404);
         }
         await db`insert into knowledge(title,content,author_id,author_name,category,difficulty,plain_content,
-        related_problem) values(${body.title},${body.content},${user.user_id},${username[0][0]},
+        related_problem) values(${body.title},${body.content},${user.user_id},${username[0]["username"]},
         ${db.array(body.category,"TEXT")},${body.difficulty},${body.plain_content},${related})`;
     });
 },
