@@ -2,9 +2,10 @@ import {Elysia} from "elysia";
 import { problem_route } from "./problem";
 import  comment_route from "./comment";
 import { cors } from '@elysiajs/cors'
-import { close_db } from "./tools";
+import { close_db,get_connection } from "./tools";
 import account_route from "./register";
 import knowledge_route from "./knowledge";
+import z from "zod";
 const app=new Elysia();
 app.use(cors());
 app.use(problem_route).use(comment_route).use(account_route).use(knowledge_route);
@@ -43,9 +44,30 @@ app.get("/",({set,headers})=>{
         </body>
     `;
 },).post("/logging",({body})=>{
-    console.log("running");
-    console.log(JSON.stringify(body));
+    get_connection(async(db)=>{
+        const username=body.record.raw_user_meta_data.username || body.record.email.split("@")[0];
+        let profile=body.record.raw_user_meta_data.profile;
+        if(profile==null){
+            profile=`https://api.dicebear.com/9.x/initials/svg?seed=${body.record.email.split("@")[0]}&chars=1`;
+        }
+        await db`insert into account(uid,username,profile) values(${body.record.id},${username},${profile})`;
+    }).then();
     return "working";
+},{body:z.object({
+    record:z.object({
+        id:z.string(),
+        email:z.string().max(120),
+        raw_user_meta_data:z.object({
+            priv:z.string(),
+            profile:z.string().max(100).optional(),
+            username:z.string().max(60),
+        })
+    })
+}),
+    headers:z.object({
+        authentication:z.string().refine(
+            s=>crypto.timingSafeEqual(Buffer.from(Bun.env.AUTH0_SECRET!),Buffer.from(s)))
+    })
 });
 if(Bun.env.LISTEN=='true'){
     await start_app();

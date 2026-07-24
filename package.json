@@ -10,7 +10,6 @@
   },
   "dependencies": {
     "@elysiajs/cors": "1.4.2",
-    "@supabase/supabase-js": "^2.110.7",
     "@upstash/redis": "^1.38.0",
     "elysia": "1.4.29",
     "jose": "^6.2.3",

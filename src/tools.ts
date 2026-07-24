@@ -88,10 +88,3 @@ export async function save_file(file:File,filter:Array<string>,dir:string="",ano
                     is_public:boolean=false):Promise<FileResult> {
     return new FileResult("",null);
 }
-export async function get_cilent(){
-    const s=await import("@supabase/supabase-js");
-    if(supabase==null){
-        supabase=s.createClient(Bun.env.SUPABASE_URL!,Bun.env.SUPABASE_SECRET!);
-    }
-    return supabase
-}

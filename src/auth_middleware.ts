@@ -5,11 +5,9 @@ const permission:Map<string,string[]>=new Map([
 ]);
 Object.freeze(permission);
 class session{
-    username:string;
     user_id:string;
     priv:string;
-    constructor(username:string,user_id:string,priv:string){
-        this.username=username;
+    constructor(user_id:string,priv:string){
         this.user_id=user_id;
         this.priv=priv;
     }
@@ -18,23 +16,19 @@ class session{
     }
 }
 function make_session(payload:JWTPayload){
-    const username = payload[`https://api.gomath.com/username`] || '';
     const user_id=payload.sub;
-    const priv=payload[`https://api.gomath.com/role`];
-    if(typeof username!="string" || user_id==undefined || !Array.isArray(priv)){
+    const priv=payload.role;
+    if(user_id==undefined || typeof priv!=="string"){
         throw status(403,"invalid jwt claim set");
     }
     let user_priv='user';
     if(priv.length){
         user_priv=priv[0];
     }
-    return new session(username,user_id,user_priv);
+    return new session(user_id,user_priv);
 }
 let jwt_keys:null|ReturnType<typeof createRemoteJWKSet>=null;
-const AUTH0_DOMAIN=Bun.env.AUTH0_DOMAIN;
-const AUTH0_AUDIENCE=Bun.env.AUTH0_AUDIENCE;
 const auth_middleware=new Elysia({name:"auth middleware"}).derive({as:"global"},async ({request,headers})=>{
-    console.log("auth middleware running");
     if (request.method === "OPTIONS") {
         return { user: null };
     }
@@ -44,21 +38,21 @@ const auth_middleware=new Elysia({name:"auth middleware"}).derive({as:"global"},
         if(!headers.username || !headers.uid || !headers.priv){
             throw status(500);
         }
-        user=new session(headers.username,headers.uid,headers.priv);
+        user=new session(headers.uid,headers.priv);
         return {user};
     }
     if(!auth_header){
         return {user};
     }
     const auth_token=auth_header.split("Bearer ")[1]?.trim();
-    if(!auth_token){
-        throw status(403,"invalid auth token");
+    if(!auth_token){    
+        throw status(403,"mssing auth token value");
     }
     if(!jwt_keys){
-        jwt_keys=createRemoteJWKSet(new URL(`https://${AUTH0_DOMAIN}/.well-known/jwks.json`));
+        jwt_keys=createRemoteJWKSet(new URL(`https://wjifwflztejubvgibbtj.supabase.co/auth/v1/.well-known/jwks.json`));
     }
     try{
-        const {payload} =await jwtVerify(auth_token,jwt_keys,{issuer:`https://${AUTH0_DOMAIN}/`,audience:AUTH0_AUDIENCE});
+        const {payload} =await jwtVerify(auth_token,jwt_keys);
         user=make_session(payload);
         return {user};
     }catch(e){

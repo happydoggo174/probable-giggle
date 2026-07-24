@@ -217,8 +217,9 @@ problem_route.use(auth_middleware).get('/home',async ({set,user})=>{
     const out=body.display_name?body.display_name:body.test_case.map(v=>v.map(z=>z.toString()));
     const hint=body.hint??[];
     return await get_connection(async(db)=>{
+        const username=await db`select username from account where uid=${user.user_id}`;
         const res=await db`insert into problem(title,author_id,author_name,description,difficulty,
-        parameter,output,display_name,hint,plain_desc) values(${body.title},${user.user_id},${user.username},
+        parameter,output,display_name,hint,plain_desc) values(${body.title},${user.user_id},${username[0]["username"]},
         ${body.description},${body.difficulty},${db.array(body.parameter,"TEXT")},${output},${db.array(out,"TEXT[]")},
         ${db.array(hint,'TEXT')},${body.plain_desc}) on conflict do nothing returning 1`;
         if(!res.length){throw status(409);}
