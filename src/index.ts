@@ -12,6 +12,7 @@ app.use(problem_route).use(comment_route).use(account_route).use(knowledge_route
 app.onStop(async()=>{
     await close_db();
 });
+function do_nothing(n:any){}
 async function start_app(){
     const port=parseInt(Bun.env.PORT ?? "3000");    
     console.log(`binding to port ${ port}`);
@@ -44,15 +45,8 @@ app.get("/",({set,headers})=>{
         </body>
     `;
 },).post("/logging",({body,headers})=>{
-    try{
-        if(!crypto.timingSafeEqual(Buffer.from(headers.authentication|| ""),Buffer.from(Bun.env.AUTH0_SECRET!))){
-            console.log("invalid auth");
-            throw 0;
-        } 
-    }catch(e){
-        console.log(e);
-    }
-    console.log("logging called");
+    do_nothing(headers.authentication);
+    //keep the header or we'll get an authentication bypass(yes,seriously)
     get_connection(async(db)=>{
         const username=body.record.raw_user_meta_data.username || body.record.email.split("@")[0];
         let profile=body.record.raw_user_meta_data.profile;
@@ -60,9 +54,7 @@ app.get("/",({set,headers})=>{
             profile=`https://api.dicebear.com/9.x/initials/svg?seed=${body.record.email.split("@")[0]}&chars=1`;
         }
         await db`insert into account(uid,username,profile) values(${body.record.id},${username},${profile})`;
-        console.log("done");
     }).then();
-    return "working";
 },{body:z.object({
     record:z.object({
         id:z.string(),
@@ -74,7 +66,9 @@ app.get("/",({set,headers})=>{
         })
     })
 }),
-});
+headers:z.object({
+    authentication:z.string().refine(s=>crypto.timingSafeEqual(Buffer.from(s),Buffer.from(Bun.env.AUTH0_SECRET!)))
+})});
 if(Bun.env.LISTEN=='true'){
     await start_app();
 }
