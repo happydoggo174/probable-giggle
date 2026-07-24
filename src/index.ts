@@ -1,4 +1,4 @@
-import {Elysia} from "elysia";
+import {Elysia,status} from "elysia";
 import { problem_route } from "./problem";
 import  comment_route from "./comment";
 import { cors } from '@elysiajs/cors'
@@ -12,7 +12,6 @@ app.use(problem_route).use(comment_route).use(account_route).use(knowledge_route
 app.onStop(async()=>{
     await close_db();
 });
-function do_nothing(n:any){}
 async function start_app(){
     const port=parseInt(Bun.env.PORT ?? "3000");    
     console.log(`binding to port ${ port}`);
@@ -45,8 +44,9 @@ app.get("/",({set,headers})=>{
         </body>
     `;
 },).post("/logging",({body,headers})=>{
-    do_nothing(headers.authentication);
-    //keep the header or we'll get an authentication bypass(yes,seriously)
+    if(!crypto.timingSafeEqual(Buffer.from(headers.authentication),Buffer.from(Bun.env.AUTH0_SECRET!))){
+        throw status(403);
+    }
     get_connection(async(db)=>{
         const username=body.record.raw_user_meta_data.username || body.record.email.split("@")[0];
         let profile=body.record.raw_user_meta_data.profile;
@@ -66,7 +66,7 @@ app.get("/",({set,headers})=>{
     })
 }),
 headers:z.object({
-    authentication:z.string().refine(s=>crypto.timingSafeEqual(Buffer.from(s),Buffer.from(Bun.env.AUTH0_SECRET!)))
+    authentication:z.string()
 })});
 if(Bun.env.LISTEN=='true'){
     await start_app();
