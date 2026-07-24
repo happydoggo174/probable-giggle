@@ -45,7 +45,7 @@ app.get("/",({set,headers})=>{
     `;
 },).post("/logging",({body,headers})=>{
     try{
-        if(!crypto.timingSafeEqual(Buffer.from(headers.authorization),Buffer.from(Bun.env.AUTH0_SECRET!))){
+        if(!crypto.timingSafeEqual(Buffer.from(headers.authorization|| ""),Buffer.from(Bun.env.AUTH0_SECRET!))){
             console.log("invalid auth");
             throw 0;
         } 
@@ -74,9 +74,6 @@ app.get("/",({set,headers})=>{
         })
     })
 }),
-    headers:z.object({
-        authorization:z.string()
-    })
 });
 if(Bun.env.LISTEN=='true'){
     await start_app();
