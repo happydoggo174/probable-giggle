@@ -45,7 +45,7 @@ app.get("/",({set,headers})=>{
     `;
 },).post("/logging",({body,headers})=>{
     try{
-        if(!crypto.timingSafeEqual(Buffer.from(headers.authorization|| ""),Buffer.from(Bun.env.AUTH0_SECRET!))){
+        if(!crypto.timingSafeEqual(Buffer.from(headers.authentication|| ""),Buffer.from(Bun.env.AUTH0_SECRET!))){
             console.log("invalid auth");
             throw 0;
         } 
