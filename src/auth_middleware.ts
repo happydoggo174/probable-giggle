@@ -34,7 +34,7 @@ const auth_middleware=new Elysia({name:"auth middleware"}).derive({as:"global"},
     }
     const auth_header=headers["authorization"];
     let user=null;
-    if(headers.jwt_bypass && Bun.env.JWT_TEST){
+    if(headers.jwt_bypass && Object.hasOwn(Bun.env,"JWT_TEST")){
         if(!headers.username || !headers.uid || !headers.priv){
             throw status(500);
         }
