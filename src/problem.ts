@@ -62,16 +62,22 @@ function validate_number(name:string[][]|undefined,test:number[][]){
     }
 }
 export const problem_route=new Elysia({prefix:"/problem"});
-problem_route.use(auth_middleware).get('/home',async ({set,user})=>{
+problem_route.use(auth_middleware).get('/home',async ({query,set,user})=>{
     return await get_connection(async (db)=>{
         if(!user){
             set.headers["cache-control"]="public, s-maxage=360, stale-while-revalidate=60";
-            return await db`select title,difficulty,reaction,id,comment_count from problem`;
+            return await db`select title,difficulty,reaction,id,comment_count from problem where id>${query.last_id}
+             order by id limit 20`;
         }
         return await db`select title,difficulty,problem.reaction,id,status,comment_count from problem 
         left join problem_info 
-        on problem.id=problem_info.problem_id and problem_info.uid=${user.user_id}`;
+        on problem.id=problem_info.problem_id and problem_info.uid=${user.user_id} where problem.id>${query.last_id} 
+        order by id limit 20`;
     });
+},{
+    query:z.object({
+        last_id:z.coerce.number().default(-1)
+    })
 }
 ).get("/detail",async ({query,set})=>{
     return await get_connection(async(db)=>{
@@ -227,7 +233,7 @@ problem_route.use(auth_middleware).get('/home',async ({set,user})=>{
 },
     {body:z.object({
         title:z.string().max(80).min(1),
-        description:z.string().max(600).min(1),
+        description:z.string().max(1000).min(1),
         difficulty:z.union([z.string("easy"),z.string("medium"),z.string("hard")]),
         parameter:z.array(z.string().max(30).refine(p=>{
             const black=["__proto__","prototype","__constructor__","output"];
