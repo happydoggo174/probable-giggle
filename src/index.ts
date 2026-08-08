@@ -6,9 +6,10 @@ import { close_db,get_connection } from "./tools";
 import account_route from "./register";
 import knowledge_route from "./knowledge";
 import z from "zod";
+import file_route from "./file_upload";
 const app=new Elysia();
 app.use(cors());
-app.use(problem_route).use(comment_route).use(account_route).use(knowledge_route);
+app.use(problem_route).use(comment_route).use(account_route).use(knowledge_route).use(file_route);
 app.onStop(async()=>{
     await close_db();
 });

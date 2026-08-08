@@ -10,8 +10,10 @@ services:
       - AUTH0_AUDIENCE=mathapi
       - JWT_TEST=j
       - SUPABASE_URL=https://wjifwflztejubvgibbtj.supabase.co
+      - S3_BASE=http://localhost:9324/
     volumes:
      - ./src:/home/bun/app/src
+     - ./image:/home/bun/app/image
   database:
     image : postgres:18.4@sha256:29ee7bb30d804447dc9a91fd0d74322ae1dc3a4072cc6346f70a5ed6e783b565
     environment:
@@ -24,3 +26,10 @@ services:
     image : redis:8-alpine@sha256:81b6f81d6a6c5b9019231a2e8eb10085e3a139a34f833dcc965a8a959b040b72
     volumes:
       - ./redis:/data
+  fs_daemon:
+    build:
+      context: ./fs_daemon
+    volumes:
+      - ./image:/image
+    ports:
+      - "9324:8000"

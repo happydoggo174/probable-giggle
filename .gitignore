@@ -45,3 +45,4 @@ yarn-error.log*
 dump.sql
 
 .env
+image/

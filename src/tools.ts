@@ -2,6 +2,9 @@ import {SQL} from "bun"
 import { Redis } from "@upstash/redis";
 import { status,t } from "elysia";
 import * as jose from "jose"
+import path from "path";
+const {randomBytes}=await import("node:crypto");
+import { put } from "@vercel/blob";
 class session{
     public uid:number;
     public priv:string;
@@ -86,5 +89,31 @@ export async function get_session(header:Record<string,string|undefined>):Promis
 }
 export async function save_file(file:File,filter:Array<string>,dir:string="",anoymous:boolean=true,max_size:number=6000000,
                     is_public:boolean=false):Promise<FileResult> {
-    return new FileResult("",null);
+    if(typeof max_size!="number" || file.size>max_size){
+        return new FileResult("","file too big");
+    }
+    const name=file.name;
+    if(name==undefined || name.length>180){
+        return new FileResult("","file name too long");
+    }
+    const ext=path.extname(name.replace("\0",""));
+    if(!filter.find(v=>v==ext)){
+        return new FileResult("",`unrecognized file extension ${ext}`);
+    }
+    let filename="";
+    if(anoymous){
+        filename=dir+randomBytes(8).toHex()+ext;
+    }else{
+        return new FileResult("","non anoymous file is not yet supported");
+    }
+    if(!Bun.env.S3_TOKEN){
+        try{
+            await Bun.write(filename,await file.arrayBuffer(),{createPath:true});
+        }catch(e){
+            return new FileResult('',`error saving file ${e}`);
+        }
+    }else{
+        await put(filename,file,{token:Bun.env.S3_TOKEN,access:is_public?"public":"private",storeId:Bun.env.S3_BUCKET});
+    }
+    return new FileResult(Bun.env.S3_BASE+filename,null);
 }
