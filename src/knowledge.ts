@@ -65,7 +65,7 @@ post("/make",async({body,user})=>{
 },
     {body:z.object({
         title:z.string().min(1).max(150),
-        content:z.string().min(1).max(8000),
+        content:z.string().min(1).max(10000),
         category:z.array(z.string().min(1).max(30)).max(12),
         difficulty:z.union([z.literal("easy"),z.literal("medium"),z.literal("hard")]),
         plain_content:z.stringbool().default(false),
