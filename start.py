@@ -20,7 +20,9 @@ async def run():
                 #display_name TEXT[][],
                 #hint TEXT[],
                 #plain_desc boolean default false,
-                #related_problem JSONB default '{}'
+                #related_problem JSONB default '{}',
+                #likes INTEGER DEFAULT 0,
+                #dislikes INTEGER DEFAULT 0
             #);
         #''')
         #await con.execute("create type problem_status as enum('none','attempted','solved')")
@@ -63,5 +65,15 @@ async def run():
                             #learned boolean,
                             #primary key(knowledge_id,uid)
                           #)''')
+        #await con.execute('''create table solution(
+                            #solution_id SERIAL,
+                            #problem_id INTEGER REFERENCES problem(id),
+                            #author_id TEXT NOT NULL REFERENCES account(uid),
+                            #title TEXT,
+                            #content TEXT NOT NULL,
+                            #is_plain BOOLEAN
+                          #)''')
+        #await con.execute("create index solution_get_idx on solution(solution_id)")
+        #await con.execute("create index solution_ls_idx on solution(problem_id)")
 import asyncio
 asyncio.run(run())

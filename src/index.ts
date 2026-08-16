@@ -1,15 +1,17 @@
-import {Elysia,status} from "elysia";
+import {Elysia} from "elysia";
 import { problem_route } from "./problem";
 import  comment_route from "./comment";
 import { cors } from '@elysiajs/cors'
-import { close_db,get_connection } from "./tools";
-import account_route from "./register";
+import { close_db } from "./tools";
+import account_route from "./account";
 import knowledge_route from "./knowledge";
-import z from "zod";
 import file_route from "./file_upload";
+import signup_route from "./signup";
+import solution_route from "./solution";
 const app=new Elysia();
 app.use(cors());
-app.use(problem_route).use(comment_route).use(account_route).use(knowledge_route).use(file_route);
+app.use(problem_route).use(comment_route).use(account_route).use(knowledge_route).use(file_route).
+use(signup_route).use(solution_route);
 app.onStop(async()=>{
     await close_db();
 });
@@ -44,31 +46,7 @@ app.get("/",({set,headers})=>{
         <div style="margin-top:12px;dislay:block;text-align:center">some other text</div>
         </body>
     `;
-},).post("/logging",({body,headers})=>{
-    if(!crypto.timingSafeEqual(Buffer.from(headers.authentication),Buffer.from(Bun.env.AUTH0_SECRET!))){
-        throw status(403);
-    }
-    get_connection(async(db)=>{
-        const username=body.record.raw_user_meta_data.username || body.record.email.split("@")[0];
-        let profile=body.record.raw_user_meta_data.profile;
-        if(profile==null){
-            profile=`https://api.dicebear.com/9.x/initials/svg?seed=${body.record.email.split("@")[0]}&chars=1`;
-        }
-        await db`insert into account(uid,username,profile) values(${body.record.id},${username},${profile})`;
-    }).then();
-},{body:z.object({
-    record:z.object({
-        id:z.string(),
-        email:z.string().max(120),
-        raw_user_meta_data:z.object({
-            profile:z.string().max(100).optional(),
-            username:z.string().max(60).optional(),
-        })
-    })
-}),
-headers:z.object({
-    authentication:z.string()
-})});
+},);
 if(Bun.env.LISTEN=='true'){
     await start_app();
 }

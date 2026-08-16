@@ -3,73 +3,16 @@ import {Elysia,status} from "elysia";
 import { get_connection } from "./tools";
 import auth_middleware from "./auth_middleware";
 import {run_test} from "./testcase";
-function compare_float(a:number,b:number){
-    return Math.abs(a-b)<1e-10;
-}
-function strict_parse_float(n:string){
-    if(n===undefined || n===null){return Number.NaN}
-    if (/[^0-9\-.,e+]/.test(n)) {
-        return Number.NaN;
-    }
-    return parseFloat(n);
-}
-function parse_percentage(n:string){
-    if(n===null || n===undefined){return Number.NaN;}
-    if(n.endsWith('%')){
-        return strict_parse_float(n.slice(0,n.length-1))/100;
-    }
-    return strict_parse_float(n);
-}
-function validate_number(name:string[][]|undefined,test:number[][]){
-    if(name===undefined || name===null){return;}
-    if(name.length!=test.length){
-        throw status(422,'mismatch testcase count');
-    }
-    for(let i=0;i<name.length;i++){
-        if(name[i].length!=test[i].length){
-            throw status(422,'mismatch count per testcase');
-        }
-        for(let j=0;j<name[i].length;j++){
-            const num=name[i][j];
-            if(num.indexOf('|')==-1){
-                if(!compare_float(parse_percentage(num),test[i][j])){
-                    throw status(422,"mismatched precentage value");
-                }
-                return;
-            }
-            const part=num.split('|').map(v=>{
-                const n=parse_percentage(v);
-                if(Number.isNaN(n)){
-                    throw status(422,'invalid number');
-                }
-                return n;
-            });
-            if(part.length==2 || part.length==3){
-                if(part[part.length-1]==0){
-                    throw status(422,"invalid fraction");
-                }
-                const sum=part[part.length-2]/part[part.length-1]+((part.length==3)?part[0]:0);
-                if(!compare_float(sum,test[i][j])){
-                    throw status(422,"invalid fraction");
-                }
-            }else{
-                if(part.length!=1){
-                    throw status(422,"unrecognized numeric type");
-                }
-                return part[0];
-            }
-        }
-    }
-}
+import validate_number from "./math_util";
 export const problem_route=new Elysia({prefix:"/problem"});
 problem_route.use(auth_middleware).get('/home',async ({query,set,user})=>{
     return await get_connection(async (db)=>{
         if(!user){
             set.headers["cache-control"]="public, s-maxage=360, stale-while-revalidate=60";
-            return await db`select title,difficulty,reaction,id,comment_count from problem where id>${query.last_id}
-             order by id limit 20`;
+            return await db`select title,difficulty,likes-dislikes as reaction
+            ,id,comment_count from problem where id>${query.last_id} order by id limit 20`;
         }
-        return await db`select title,difficulty,problem.reaction,id,status,comment_count from problem 
+        return await db`select title,difficulty,likes-dislikes as reaction,id,status,comment_count from problem 
         left join problem_info 
         on problem.id=problem_info.problem_id and problem_info.uid=${user.user_id} where problem.id>${query.last_id} 
         order by id limit 20`;
@@ -81,8 +24,8 @@ problem_route.use(auth_middleware).get('/home',async ({query,set,user})=>{
 }
 ).get("/detail",async ({query,set})=>{
     return await get_connection(async(db)=>{
-        const data=await db`select title,description,author_name as author,author_id,comment_count,parameter,output,reaction,
-        display_name,hint,plain_desc,account.profile from problem 
+        const data=await db`select title,description,author_name as author,author_id,comment_count,parameter,output,likes,
+        dislikes,likes-dislikes as reaction,display_name,hint,plain_desc,account.profile from problem 
         left join account on problem.author_id=account.uid 
         where id=${query.problem_id}`;
         if(!data.length){
@@ -139,13 +82,13 @@ problem_route.use(auth_middleware).get('/home',async ({query,set,user})=>{
     return await get_connection(async(db)=>{
         return await db.begin(async(db)=>{
             const stat=await db`select reaction from problem_info where problem_id=${query.problem_id} and 
-            uid=${user.user_id} for update`;
+            uid=${user.user_id} for update`.values();
             let res=await db`insert into problem_info(problem_id,uid,status,reaction) values(${query.problem_id},
             ${user.user_id},'none','liked') on conflict(problem_id,uid) do update set reaction='liked' 
             where problem_info.reaction!='liked' returning 1`;
             if(!res.length){throw status(403,"you had already liked this post");}
-            const add=(stat.length && stat[0]["reaction"]=="disliked")?2:1;
-            res=await db`update problem set reaction=reaction+${add} where id=${query.problem_id} returning 1`;
+            const sub=stat.length && stat[0][0]=='disliked'?db`,dislikes=dislikes-1`:db``;
+            res=await db`update problem set likes=likes+1${sub} where id=${query.problem_id} returning 1`;
             if(!res.length){
                 throw status(404,"problem not found");
             }
@@ -158,13 +101,13 @@ problem_route.use(auth_middleware).get('/home',async ({query,set,user})=>{
     return await get_connection(async(db)=>{
         return await db.begin(async(db)=>{
             const stat=await db`select reaction from problem_info where problem_id=${query.problem_id} and 
-            uid=${user.user_id} for update`;
+            uid=${user.user_id} for update`.values();
             let res=await db`insert into problem_info(problem_id,uid,status,reaction) values(${query.problem_id},
             ${user.user_id},'none','disliked') on conflict(problem_id,uid) do update set reaction='disliked' 
             where problem_info.reaction!='disliked' returning 1`;
             if(!res.length){throw status(403,"you had already disliked this post");}
-            const add=(stat.length && stat[0]["reaction"]=="liked")?2:1;
-            res=await db`update problem set reaction=reaction-${add} where id=${query.problem_id} returning 1`;
+            const sub=stat.length && stat[0][0]=='liked'?db`,likes=likes-1`:db``;
+            res=await db`update problem set dislikes=dislikes+1${sub} where id=${query.problem_id} returning 1`;
             if(!res.length){
                 throw status(404,"problem not found");
             }
