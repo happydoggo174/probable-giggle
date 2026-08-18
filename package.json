@@ -4,7 +4,7 @@
   "scripts": {
     "dev": "bun run --watch src/index.ts",
     "start": "./server",
-    "docker": "docker restart app-bun_server-1",
+    "docker": "docker restart -t 0 app-bun_server-1",
     "commit": "git add . && git commit && git push origin main",
     "build": "bun build --compile --minify-whitespace --minify-syntax --target bun --outfile server src/index.ts"
   },

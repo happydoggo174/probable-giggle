@@ -71,7 +71,8 @@ async def run():
                             #author_id TEXT NOT NULL REFERENCES account(uid),
                             #title TEXT,
                             #content TEXT NOT NULL,
-                            #is_plain BOOLEAN
+                            #is_plain BOOLEAN,
+                            #equation TEXT
                           #)''')
         #await con.execute("create index solution_get_idx on solution(solution_id)")
         #await con.execute("create index solution_ls_idx on solution(problem_id)")
