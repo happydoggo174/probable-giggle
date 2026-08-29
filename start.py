@@ -76,5 +76,15 @@ async def run():
                           #)''')
         #await con.execute("create index solution_get_idx on solution(solution_id)")
         #await con.execute("create index solution_ls_idx on solution(problem_id)")
+        await con.execute('''
+          create table uploaded(
+            uid TEXT references account(uid),
+            time TIMESTAMPZ,
+            filename TEXT,
+            doc_id TEXT  
+          )
+        ''')
+        await con.execute("create index uploader_idx on uploaded(uid)")
+        await con.execute("create index uploader_docs on uploaded(doc_id)")
 import asyncio
 asyncio.run(run())
